@@ -50,7 +50,7 @@ export default function FormElementsPage() {
             title="Toggle switch input"
             className="space-y-5.5 !p-6.5"
           >
-            <Switch />
+            <Switch  />
             <Switch backgroundSize="sm" />
             <Switch withIcon />
             <Switch background="dark" />

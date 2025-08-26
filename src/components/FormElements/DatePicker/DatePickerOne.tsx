@@ -5,16 +5,19 @@ import flatpickr from "flatpickr";
 import { useEffect } from "react";
 interface propsType {
   label? : string
+  className? :string
 }
 
 const DatePickerOne = ({label}: propsType) => {
   useEffect(() => {
     // Init flatpickr
     flatpickr(".form-datepicker", {
-      mode: "single",
-      static: true,
-      monthSelectorType: "static",
-      dateFormat: "M j, Y",
+  mode: "single",
+  dateFormat: "M j, Y",
+  monthSelectorType: "dropdown",
+  static: false, 
+  appendTo: document.body,
+  position: "auto center",
     });
   }, []);
 
@@ -23,9 +26,9 @@ const DatePickerOne = ({label}: propsType) => {
       <label className="mb-3 block text-body-sm font-medium text-dark dark:text-white">
         {label}
       </label>
-      <div className="relative">
+      <div className="relative ">
         <input
-          className="form-datepicker w-full rounded-[7px] border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:focus:border-primary"
+          className="form-datepicker w-full rounded-[7px]  border-[1.5px] border-stroke bg-transparent px-5 py-3 font-normal outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:focus:border-primary"
           placeholder="mm/dd/yyyy"
           data-class="flatpickr-right"
         />

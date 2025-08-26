@@ -9,10 +9,26 @@ import Card from '@/components/ui/Card'
 import Pagination from '@/components/ui/Pagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import Image from 'next/image'
+import { toast } from 'react-toastify';
+import { AlertConfirm } from '@/lib/utils';
+import { TopChannels } from '@/components/Tables/top-channels';
+import { Switch } from '@/components/FormElements/switch';
 
 const PageMember = () => {
   const [data, setData] = useState<any[]>([]);
   const [page, setPage] = useState(1);
+   const [enabled, setEnabled] = useState(false);
+
+  const handleChangeStatus = (value : boolean) => {
+    toast.success('Success'+ value)
+     setEnabled(value); 
+  }
+
+  const handleDelete = async () => {
+    const result = await AlertConfirm('ลบข้อมูล', 'คุณต้องการลบข้อมูลนี้จริงหรือไม่ ?')
+    if (result) toast.success('Success')
+
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,7 +41,7 @@ const PageMember = () => {
   return (
     <div className='flex flex-col md:flex-row gap-4'>
       <Card className="w-full md:w-8/12">
-        <div className='mb-4 flex flex-col md:flex-row gap-4 items-center'>
+        <div className='mb-4 flex flex-col md:flex-row gap-4 items-center '>
           <h3 className='text-xl text-dark-2 dark:text-dark-8'>ข้อมูลพนักงาน</h3>
           <InputGroup
             className="w-full sm:w-1/2"
@@ -38,51 +54,37 @@ const PageMember = () => {
             height="sm"
           />
         </div>
-        <Table>
-          <TableHeader>
-            <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">
-              <TableHead className="min-w-[120px] pl-5 sm:pl-6 xl:pl-7.5">
-                Product Name
-              </TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Sold</TableHead>
-              <TableHead className="pr-5 text-right sm:pr-6 xl:pr-7.5">
-                Profit
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.map((product) => (
-              <TableRow
-                className="text-base font-medium text-dark dark:text-white"
-                key={product.name + product.profit}
-              >
-                <TableCell className="flex min-w-fit items-center gap-3 pl-5 sm:pl-6 xl:pl-7.5">
-                  <Image
-                    src={product.image}
-                    className="aspect-[6/5] w-15 rounded-[5px] object-cover"
-                    width={60}
-                    height={50}
-                    alt={"Image for product " + product.name}
-                    role="presentation"
-                  />
-                  <div>{product.name}</div>
-                </TableCell>
 
-                <TableCell>{product.category}</TableCell>
-
-                <TableCell>${product.price}</TableCell>
-
-                <TableCell>{product.sold}</TableCell>
-
-                <TableCell className="pr-5 text-right text-green-light-1 sm:pr-6 xl:pr-7.5">
-                  ${product.profit}
-                </TableCell>
+        <div className="grid mt-6  dark:bg-gray-dark dark:shadow-card    ">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-none uppercase [&>th]:text-center">
+                <TableHead className="min-w-[120px] !text-left">Source</TableHead>
+                <TableHead>Visitors</TableHead>
+                <TableHead>Conversion</TableHead>
+                <TableHead>Conversion</TableHead>
+                <TableHead>Conversion</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {data.map((channel, i) => (
+                <TableRow
+                  className="text-center text-base font-medium text-dark dark:text-white"
+                  key={channel.name + i}
+                >
+                  <TableCell className="flex min-w-fit items-center gap-3">
+                    <div className="">{channel.name}</div>
+                  </TableCell>
+                  <TableCell>{channel.sales}</TableCell>
+                  <TableCell>{channel.conversion}%</TableCell>
+                  <TableCell>{channel.conversion}%</TableCell>
+                  <TableCell>{channel.conversion}%</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
         <Pagination
           currentPage={page}
           totalPages={10}
@@ -146,14 +148,16 @@ const PageMember = () => {
 
           <div className='flex gap-2 justify-center items-center'>
             <label htmlFor="">
-              <span className='bg-green-200 text-dark-3 px-4 py-0.5 rounded-md'>อยู่ในระบบ</span>
+              <span className='bg-green-200 text-dark-3 px-4 py-0.5 rounded-md'>
+                {!enabled  ?  "อยู่ในระบบ" : "ให้ออกจากระบบ"}
+              </span>
             </label>
-            <Button label="อัพเดท" variant="dark" shape="rounded" size="small" className='h-8' />
+            <Switch  checked={enabled} onChange={handleChangeStatus}  />
           </div>
           <hr className='my-6' />
 
           <div className='flex justify-end gap-2 '>
-            <Button label="ลบ" variant="outlineRed" shape="rounded" size="small" className='h-9' />
+            <Button label="ลบ" variant="outlineRed" shape="rounded" size="small" className='h-9' onClick={handleDelete} />
             <Button type="submit" label="บันทึก" variant="primary" shape="rounded" size="small" className='h-9' />
           </div>
 

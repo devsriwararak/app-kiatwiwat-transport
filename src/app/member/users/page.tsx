@@ -38,51 +38,53 @@ const PageUsers = () => {
                         height="sm"
                     />
                 </div>
-                <Table>
-                    <TableHeader>
-                        <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">
-                            <TableHead className="min-w-[120px] pl-5 sm:pl-6 xl:pl-7.5">
-                                Product Name
-                            </TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead>Price</TableHead>
-                            <TableHead>Sold</TableHead>
-                            <TableHead className="pr-5 text-right sm:pr-6 xl:pr-7.5">
-                                Profit
-                            </TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {data.map((product) => (
-                            <TableRow
-                                className="text-base font-medium text-dark dark:text-white"
-                                key={product.name + product.profit}
-                            >
-                                <TableCell className="flex min-w-fit items-center gap-3 pl-5 sm:pl-6 xl:pl-7.5">
-                                    <Image
-                                        src={product.image}
-                                        className="aspect-[6/5] w-15 rounded-[5px] object-cover"
-                                        width={60}
-                                        height={50}
-                                        alt={"Image for product " + product.name}
-                                        role="presentation"
-                                    />
-                                    <div>{product.name}</div>
-                                </TableCell>
-
-                                <TableCell>{product.category}</TableCell>
-
-                                <TableCell>${product.price}</TableCell>
-
-                                <TableCell>{product.sold}</TableCell>
-
-                                <TableCell className="pr-5 text-right text-green-light-1 sm:pr-6 xl:pr-7.5">
-                                    ${product.profit}
-                                </TableCell>
+                <div className='grid mt-4'>
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">
+                                <TableHead className="min-w-[120px] pl-5 sm:pl-6 xl:pl-7.5">
+                                    Product Name
+                                </TableHead>
+                                <TableHead>Category</TableHead>
+                                <TableHead>Price</TableHead>
+                                <TableHead>Sold</TableHead>
+                                <TableHead className="pr-5 text-right sm:pr-6 xl:pr-7.5">
+                                    Profit
+                                </TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {data.map((product) => (
+                                <TableRow
+                                    className="text-base font-medium text-dark dark:text-white"
+                                    key={product.name + product.profit}
+                                >
+                                    <TableCell className="flex min-w-fit items-center gap-3 pl-5 sm:pl-6 xl:pl-7.5">
+                                        <Image
+                                            src={product.image}
+                                            className="aspect-[6/5] w-15 rounded-[5px] object-cover"
+                                            width={60}
+                                            height={50}
+                                            alt={"Image for product " + product.name}
+                                            role="presentation"
+                                        />
+                                        <div>{product.name}</div>
+                                    </TableCell>
+
+                                    <TableCell>{product.category}</TableCell>
+
+                                    <TableCell>${product.price}</TableCell>
+
+                                    <TableCell>{product.sold}</TableCell>
+
+                                    <TableCell className="pr-5 text-right text-green-light-1 sm:pr-6 xl:pr-7.5">
+                                        ${product.profit}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
                 <Pagination
                     currentPage={page}
                     totalPages={10}

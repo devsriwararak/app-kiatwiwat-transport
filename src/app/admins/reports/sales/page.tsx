@@ -12,7 +12,7 @@ import { ChatsCard } from '../../home/_components/chats-card'
 const PageSales = () => {
   return (
     <div>
-      <Card title="รายงานยอดขาย" className=" ">
+      <Card  className=" ">
         <div className='flex justify-between items-end gap-4  w-full'>
           <div className='flex gap-4 w-full '>
             <DatePickerOne label='วันที่เริ่มต้น' />
