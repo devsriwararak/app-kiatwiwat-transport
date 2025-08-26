@@ -3,7 +3,7 @@ import { redirect, RedirectType } from 'next/navigation'
 
 
 const PageAdmin = () => {
-redirect('/admins/reports/sales', RedirectType.replace)
+redirect('/member/process', RedirectType.replace)
   return (
     <></>
   )

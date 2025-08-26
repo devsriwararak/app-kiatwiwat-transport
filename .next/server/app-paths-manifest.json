@@ -1,1 +1,7 @@
-{}
+{
+  "/forms/form-elements/page": "app/forms/form-elements/page.js",
+  "/member/users/page": "app/member/users/page.js",
+  "/member/process/page": "app/member/process/page.js",
+  "/admins/reports/sales/page": "app/admins/reports/sales/page.js",
+  "/admins/defaults/members/page": "app/admins/defaults/members/page.js"
+}

@@ -71,7 +71,7 @@ export function Sidebar() {
               onClick={() => isMobile && toggleSidebar()}
               className="px-0 py-2.5 min-[850px]:py-0 text-3xl text-dark-2 dark:text-dark-8"
             >
-             รื่นรมย์ มือถือ
+             เกียรติวิวัฒน์
             </Link>
 
             {isMobile && (

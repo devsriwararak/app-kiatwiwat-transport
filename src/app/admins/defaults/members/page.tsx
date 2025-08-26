@@ -10,11 +10,11 @@ import Pagination from '@/components/ui/Pagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import Image from 'next/image'
 
-const PageMember =  () => {
+const PageMember = () => {
   const [data, setData] = useState<any[]>([]);
   const [page, setPage] = useState(1);
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       const res = await getTopProducts();
       setData(res);
@@ -24,7 +24,20 @@ const PageMember =  () => {
 
   return (
     <div className='flex flex-col md:flex-row gap-4'>
-      <Card className="w-full md:w-8/12" title="ข้อมูลพนักงาน">
+      <Card className="w-full md:w-8/12">
+        <div className='mb-4 flex flex-col md:flex-row gap-4 items-center'>
+          <h3 className='text-xl text-dark-2 dark:text-dark-8'>ข้อมูลพนักงาน</h3>
+          <InputGroup
+            className="w-full sm:w-1/2"
+            type="text"
+            name="fullName"
+            label=""
+            placeholder="ค้นหา"
+            icon={<UserIcon />}
+            iconPosition="left"
+            height="sm"
+          />
+        </div>
         <Table>
           <TableHeader>
             <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">
@@ -78,7 +91,10 @@ const PageMember =  () => {
         />
       </Card>
 
-      <Card className="w-full md:w-4/12" title="เพิ่ม/แก้ไข">
+      <Card className="w-full md:w-4/12" >
+        <div className='mb-4'>
+          <h3 className='text-xl text-dark-2 dark:text-dark-8'>เพิ่ม/แก้ไข</h3>
+        </div>
         <form >
           <div className="mb-5.5 flex flex-col gap-2 sm:flex-row">
             <InputGroup
@@ -128,9 +144,17 @@ const PageMember =  () => {
             />
           </div>
 
-          <div className='flex justify-end gap-2'>
-            <Button label="ยกเลิก" variant="outlinePrimary" shape="rounded" size="small" />
-            <Button label="บันทึก" variant="primary" shape="rounded" size="small" />
+          <div className='flex gap-2 justify-center items-center'>
+            <label htmlFor="">
+              <span className='bg-green-200 text-dark-3 px-4 py-0.5 rounded-md'>อยู่ในระบบ</span>
+            </label>
+            <Button label="อัพเดท" variant="dark" shape="rounded" size="small" className='h-8' />
+          </div>
+          <hr className='my-6' />
+
+          <div className='flex justify-end gap-2 '>
+            <Button label="ลบ" variant="outlineRed" shape="rounded" size="small" className='h-9' />
+            <Button type="submit" label="บันทึก" variant="primary" shape="rounded" size="small" className='h-9' />
           </div>
 
         </form>
