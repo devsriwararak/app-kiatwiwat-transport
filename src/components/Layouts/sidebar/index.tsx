@@ -7,8 +7,9 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { NAV_DATA } from "./data";
 import { ArrowLeftIcon, ChevronUp } from "./icons";
-import { MenuItem } from "./menu-item";
+import { MenuItem, MenuItemList } from "./menu-item";
 import { useSidebarContext } from "./sidebar-context";
+import { DotIcon } from "@/assets/icons";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -55,7 +56,7 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          "max-w-[290px] overflow-hidden border-r border-gray-200 bg-white transition-[width] duration-200 ease-linear dark:border-gray-800 dark:bg-gray-dark",
+          "max-w-[270px] overflow-hidden border-r border-gray-200 bg-white transition-[width] duration-300 ease-linear dark:border-gray-800 dark:bg-gray-dark",
           isMobile ? "fixed bottom-0 top-0 z-50" : "sticky top-0 h-screen",
           isOpen ? "w-full" : "w-0",
         )}
@@ -68,9 +69,9 @@ export function Sidebar() {
             <Link
               href={"/"}
               onClick={() => isMobile && toggleSidebar()}
-              className="px-0 py-2.5 min-[850px]:py-0"
+              className="px-0 py-2.5 min-[850px]:py-0 text-3xl text-dark-2 dark:text-dark-8"
             >
-              <Logo />
+             รื่นรมย์ มือถือ
             </Link>
 
             {isMobile && (
@@ -86,10 +87,10 @@ export function Sidebar() {
           </div>
 
           {/* Navigation */}
-          <div className="custom-scrollbar mt-6 flex-1 overflow-y-auto pr-3 min-[850px]:mt-10">
+          <div className="custom-scrollbar mt-6 flex-1 overflow-y-auto pr-3 min-[850px]:mt-5">
             {NAV_DATA.map((section) => (
               <div key={section.label} className="mb-6">
-                <h2 className="mb-5 text-sm font-medium text-dark-4 dark:text-dark-6">
+                <h2 className="mb-5 text-sm font-medium text-dark-6 dark:text-dark-5">
                   {section.label}
                 </h2>
 
@@ -129,13 +130,13 @@ export function Sidebar() {
                               >
                                 {item.items.map((subItem) => (
                                   <li key={subItem.title} role="none">
-                                    <MenuItem
+                                    <MenuItemList
                                       as="link"
                                       href={subItem.url}
                                       isActive={pathname === subItem.url}
                                     >
-                                      <span>{subItem.title}</span>
-                                    </MenuItem>
+                                    - <span>{subItem.title}</span>
+                                    </MenuItemList>
                                   </li>
                                 ))}
                               </ul>

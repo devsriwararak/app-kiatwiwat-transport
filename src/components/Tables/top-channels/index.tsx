@@ -11,7 +11,13 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { getTopChannels } from "../fetch";
 
-export async function TopChannels({ className }: { className?: string }) {
+interface propsType {
+  className?: string
+  title?: string
+
+}
+
+export async function TopChannels({ className, title }: propsType) {
   const data = await getTopChannels();
 
   return (
@@ -22,7 +28,7 @@ export async function TopChannels({ className }: { className?: string }) {
       )}
     >
       <h2 className="mb-4 text-body-2xlg font-bold text-dark dark:text-white">
-        Top Channels
+       {title}
       </h2>
 
       <Table>
