@@ -4,7 +4,7 @@ import React, { ReactNode } from 'react'
 
 const SessionProviderAuth = ({ children }: { children: ReactNode }) => {
   return (
-    <SessionProvider>
+    <SessionProvider  >
       {children}
     </SessionProvider>
   )

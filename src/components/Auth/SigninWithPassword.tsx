@@ -48,7 +48,7 @@ export default function SigninWithPassword() {
         className="mb-4 [&_input]:py-[15px]"
         placeholder="Enter your username"
         name="username"
-        handleChange={(e) => setUsername(e.target.value)}
+        onChange={(e) => setUsername(e.target.value)}
         value={username}
         icon={<EmailIcon />}
       />
@@ -59,7 +59,7 @@ export default function SigninWithPassword() {
         className="mb-5 [&_input]:py-[15px]"
         placeholder="Enter your password"
         name="password"
-        handleChange={(e) => setPassword(e.target.value)}
+        onChange={(e) => setPassword(e.target.value)}
         value={password}
         icon={<PasswordIcon />}
       />

@@ -1,74 +1,101 @@
 'use client'
-import { getTopProducts } from '@/components/Tables/fetch';
 import Pagination from '@/components/ui/Pagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import React, { useEffect, useState } from 'react'
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { dataType } from '../page';
+import moment from 'moment';
+import { formathDateThai } from '@/lib/utils';
+import { PencilSquareIcon } from '@/assets/icons';
 
-const Today = () => {
+interface propsType {
+    due_today: dataType[];
+    overdue: dataType[];
 
-    const [data, setData] = useState<any[]>([]);
-    const [page, setPage] = useState(1);
+    totalPageProp: number;
+    currentPage: number;
+    setCurrentPage: Dispatch<SetStateAction<number>>;
+}
 
-    useEffect(() => {
-        const fetchData = async () => {
-            const res = await getTopProducts();
-            setData(res);
-        };
-        fetchData();
-    }, [page]);
+const Today = ({ due_today, overdue, totalPageProp, currentPage, setCurrentPage }: propsType) => {
+    const [index, setIndex] = useState<number | null>(null)
+
+    const handleClick = (id: number) => {
+        setIndex(id)
+    }
 
     return (
         <div>
+            <div className='my-4 mt-0 text-base bg-gray-200 w-full text-center rounded-sm text-dark-2'>ค้างจ่าย ติดลบ</div>
 
-            <div className='mb-4 flex flex-col md:flex-row gap-4 items-center'>
-                <h3 className='text-xl text-dark-2 dark:text-dark-8'>จ่ายวันนี้</h3>
+            <div className='  h-60 overflow-y-auto'>
+                <Table className=' '>
+                    <TableHeader className=' '>
+                        <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">
+                            <TableHead>จำนวนวัน</TableHead>
+
+                            <TableHead className="min-w-[120px] pl-5 sm:pl-6 xl:pl-7.5">
+                                เลขที่บิล
+                            </TableHead>
+                            <TableHead>ชื่อลูกค้า</TableHead>
+                            <TableHead>จำนวนเงิน</TableHead>
+                            <TableHead>กำหนดชำระ</TableHead>
+                            <TableHead>Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody className='overflow-y-scroll '>
+
+                        {overdue?.map((product) => (
+                            <TableRow
+                                className={`text-sm font-medium text-dark dark:text-white ${index === product.id ? "bg-gray-200" : ""} `}
+                                key={product.id}
+                            >
+                                <TableCell>{product.days_left}</TableCell>
+                                <TableCell className="flex min-w-fit items-center gap-3 pl-5 sm:pl-6 xl:pl-7.5">
+                                    <div>{product.bill_number}</div>
+                                </TableCell>
+                                <TableCell>{product.member_name}</TableCell>
+                                <TableCell>${product.payment_amount}</TableCell>
+                                <TableCell>{formathDateThai(product.payment_date)}</TableCell>
+                                <TableCell onClick={() => handleClick(product.id)} className='flex justify-end cursor-pointer   '><PencilSquareIcon className='active:bg-gray-300' /></TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
             </div>
 
-            <Table>
-                <TableHeader>
-                    <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">
-                        <TableHead className="min-w-[120px] pl-5 sm:pl-6 xl:pl-7.5">
-                            Product Name
-                        </TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Sold</TableHead>
-                        <TableHead className="pr-5 text-right sm:pr-6 xl:pr-7.5">
-                            Profit
-                        </TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {data.map((product) => (
-                        <TableRow
-                            className="text-base font-medium text-dark dark:text-white"
-                            key={product.name + product.profit}
-                        >
-                            <TableCell className="flex min-w-fit items-center gap-3 pl-5 sm:pl-6 xl:pl-7.5">
-                                <div>{product.name}</div>
-                            </TableCell>
+            <div className='my-4  text-base bg-gray-200 w-full text-center rounded-sm text-dark-2'>รายชื่อค้างจ่ายวันนี้</div>
 
-                            <TableCell>{product.category}</TableCell>
 
-                            <TableCell>${product.price}</TableCell>
+            <div className=''>
+                <Table>
+                    <TableBody>
+                        {due_today?.map((product) => (
+                            <TableRow
+                                className="text-sm font-medium text-dark dark:text-white"
+                                key={product.id}
+                            >
+                                <TableCell className="flex min-w-fit items-center gap-3 pl-5 sm:pl-6 xl:pl-7.5">
+                                    <div>{product.bill_number}</div>
+                                </TableCell>
+                                <TableCell>{product.member_name}</TableCell>
+                                <TableCell>${product.payment_amount}</TableCell>
+                                <TableCell>{formathDateThai(product.payment_date)}</TableCell>
+                                <TableCell onClick={() => handleClick(product.id)} className='flex justify-end cursor-pointer hover:bg-gray-200  p-2 rounded-full '><PencilSquareIcon /></TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
 
-                            <TableCell>{product.sold}</TableCell>
-
-                            <TableCell className="pr-5 text-right text-green-light-1 sm:pr-6 xl:pr-7.5">
-                                ${product.profit}
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-            <Pagination
-                currentPage={page}
-                totalPages={10}
-                onPageChange={(p) => setPage(p)}
+            {/* <Pagination
+                currentPage={currentPage}
+                totalPages={totalPageProp}
+                onPageChange={(p) => setCurrentPage(p)}
                 className="mt-4 flex justify-end"
-            />
+            /> */}
         </div>
     )
 }
 
 export default Today
+

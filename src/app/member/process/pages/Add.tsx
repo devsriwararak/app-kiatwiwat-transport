@@ -1,82 +1,112 @@
 'use client'
-import { UserIcon } from '@/assets/icons';
-import InputGroup from '@/components/FormElements/InputGroup';
-import { getTopProducts } from '@/components/Tables/fetch';
 import Pagination from '@/components/ui/Pagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import React, { useEffect, useState } from 'react'
+import { formathDateThai } from '@/lib/utils';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { dataType } from '../page';
+import DatePickerOne from '@/components/FormElements/DatePicker/DatePickerOne';
+import moment from 'moment';
+import { Button } from '@/components/ui-elements/button';
+import { PencilSquareIcon } from '@/assets/icons';
 
-const Add = () => {
+interface propsType {
+    dataProps: dataType[];
+    startDate: string; // เปลี่ยนจาก Date | null เป็น string
+    setStartDate: Dispatch<SetStateAction<string>>;
+    endDate: string;   // เปลี่ยนจาก Date | null เป็น string
+    setEndDate: Dispatch<SetStateAction<string>>;
+    totalPageProp: number;
+    currentPage: number;
+    setCurrentPage: Dispatch<SetStateAction<number>>;
+    setDataSend : Dispatch<SetStateAction<dataType>>
+}
 
-    const [data, setData] = useState<any[]>([]);
-    const [page, setPage] = useState(1);
+const Add = ({ dataProps, totalPageProp, currentPage, setCurrentPage, setStartDate, setEndDate, startDate, endDate, setDataSend }: propsType) => {
+
+    const [data, setData] = useState<dataType[]>(dataProps);
+    const [index, setIndex] = useState<number | null>(null)
+
+    const handleCancel = () => {
+        const formattedDate = moment(Date.now()).format("YYYY-MM-DD"); // "2025-08-29"
+        setStartDate("")
+        setEndDate("")
+    }
+
+    const handleClick = (product:dataType)=>{
+        setIndex(product.id)
+        setDataSend({
+            id: product.id,
+            bill_number: product.bill_number,
+            payment_date: product.payment_date,
+            payment_amount: product.payment_amount,
+            status: product.status,
+            member_id: product.member_id,
+            member_name: product.member_name,
+            days_left: product.days_left
+        })
+    }
 
     useEffect(() => {
-        const fetchData = async () => {
-            const res = await getTopProducts();
-            setData(res);
-        };
-        fetchData();
-    }, [page]);
+        setData(dataProps)
+    }, [currentPage, dataProps]);
 
     return (
         <div>
 
-            <div className='mb-4 flex flex-col md:flex-row gap-4 items-center'>
-                <h3 className='text-xl text-dark-2 dark:text-dark-8'>เพิ่มใหม่</h3>
-                <InputGroup
-                    className="w-full sm:w-1/2"
-                    type="text"
-                    name="fullName"
-                    label=""
-                    placeholder="ค้นหา"
-                    icon={<UserIcon />}
-                    iconPosition="left"
-                    height="sm"
+            <div className='mb-4 flex flex-col md:flex-row gap-4 items-end'>
+                <DatePickerOne
+                    label="วันที่เริ่มต้น"
+                    name="start_date"
+                    onChange={(date) => setStartDate(date ? moment(date).format("YYYY-MM-DD") : "")}
+                    value={startDate}
                 />
+                <DatePickerOne
+                    label="วันที่สิ้นสุด"
+                    name="end_date"
+                    onChange={(date) => setEndDate(date ? moment(date).format("YYYY-MM-DD") : "")}
+                    value={endDate}
+                />
+                <Button onClick={handleCancel} label='เคลีย' className='h-9' shape="rounded" variant="primary" />
             </div>
 
             <Table>
                 <TableHeader>
                     <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">
                         <TableHead className="min-w-[120px] pl-5 sm:pl-6 xl:pl-7.5">
-                            Product Name
+                            เลขที่บิล
                         </TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Sold</TableHead>
-                        <TableHead className="pr-5 text-right sm:pr-6 xl:pr-7.5">
-                            Profit
-                        </TableHead>
+                        <TableHead>ชื่อลูกค้า</TableHead>
+                        <TableHead>จำนวนเงิน</TableHead>
+                        <TableHead>กำหนดชำระ</TableHead>
+                        <TableHead>Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {data.map((product) => (
+                    {data?.map((product: dataType) => (
                         <TableRow
-                            className="text-base font-medium text-dark dark:text-white"
-                            key={product.name + product.profit}
+                            className={`text-sm font-medium text-dark dark:text-white ${index === product.id ? "bg-gray-200" : ""} `}
+                            key={product.id}
                         >
                             <TableCell className="flex min-w-fit items-center gap-3 pl-5 sm:pl-6 xl:pl-7.5">
-                                <div>{product.name}</div>
+                                <div>{product.bill_number}</div>
                             </TableCell>
 
-                            <TableCell>{product.category}</TableCell>
+                            <TableCell>{product.member_name}</TableCell>
 
-                            <TableCell>${product.price}</TableCell>
+                            <TableCell>${product.payment_amount}</TableCell>
 
-                            <TableCell>{product.sold}</TableCell>
+                            <TableCell>{formathDateThai(product.payment_date)}</TableCell>
+                            <TableCell onClick={() => handleClick(product)} className='flex justify-center cursor-pointer  '><PencilSquareIcon /></TableCell>
 
-                            <TableCell className="pr-5 text-right text-green-light-1 sm:pr-6 xl:pr-7.5">
-                                ${product.profit}
-                            </TableCell>
+
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
             <Pagination
-                currentPage={page}
-                totalPages={10}
-                onPageChange={(p) => setPage(p)}
+                currentPage={currentPage}
+                totalPages={totalPageProp}
+                onPageChange={(p) => setCurrentPage(p)}
                 className="mt-4 flex justify-end"
             />
         </div>

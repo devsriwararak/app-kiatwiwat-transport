@@ -1,5 +1,8 @@
 import NextAuth, { AuthOptions } from "next-auth";
 import { JWT } from "next-auth/jwt";
+import jwt from "jsonwebtoken";
+
+
 import CredentialsProvider from "next-auth/providers/credentials";
 
 async function refreshAccessToken(token: JWT): Promise<JWT> {
@@ -7,27 +10,46 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
         console.log("Attempting to refresh access token...");
 
         // **สำคัญ:** เปลี่ยน URL นี้เป็น Endpoint /refreshtoken ของคุณ
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API}/auth/v1/refresh`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                refresh_token: token.refreshToken,
-            }),
-        });
+        // const response = await fetch(`${process.env.NEXT_PUBLIC_API}/auth/v1/refresh`, {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //     },
+        //     body: JSON.stringify({
+        //         refresh_token: token.refreshToken,
+        //     }),
+        // });
+
+          const apiUrl = `${process.env.NEXT_PUBLIC_API}/auth/v1/refresh`;
+
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        refresh_token: token.refreshToken,
+      }),
+    });
 
         // **แก้ไข:** ตรวจสอบว่า response สำเร็จหรือไม่
         if (response.ok) {
             const refreshedTokens = await response.json();
+            const decoded = jwt.decode(refreshedTokens.access_token) as { exp?: number };
             console.log("Access token refreshed successfully.");
             // คืนค่า token ที่ได้รับการ refresh ใหม่
-            console.log({token_2:refreshedTokens.access_token });
+            // console.log({all : refreshedTokens});
+
+            console.log({ token_2_token: refreshedTokens.access_token });
+            console.log({ token_2_refreshToken: refreshedTokens.refresh_token });
+            console.log({decoded});
+            
             return {
                 ...token,
                 accessToken: refreshedTokens.access_token,
-                accessTokenExpires: Date.now() + 15 * 1000, // 15 วินาที
-                refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
+                // accessTokenExpires: Date.now() + 60 * 1000,
+                accessTokenExpires: decoded.exp ? decoded.exp * 1000 : Date.now() + 60 * 1000,
+                refreshToken: refreshedTokens.refresh_token,
                 error: undefined, // ล้าง error เก่าทิ้ง
             };
         }
@@ -37,7 +59,6 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
             ...token,
             error: "RefreshAccessTokenError",
         };
-
     } catch (error) {
         console.error("Error in refreshAccessToken function:", error);
         // กรณีเกิด Network error หรืออื่นๆ
@@ -48,7 +69,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
     }
 }
 
- const authOptions: AuthOptions = {
+const authOptions: AuthOptions = {
     providers: [
         CredentialsProvider({
             name: "Credentials",
@@ -62,7 +83,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
                     return null;
                 }
                 try {
-                    const res = await fetch(`${process.env.NEXT_PUBLIC_API}/auth/v1/login`, {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API}/auth/${process.env.NEXT_PUBLIC_V}/login`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -71,19 +92,25 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
                         }),
                     });
 
-
                     if (res.ok) {
+                        console.log("User authorized successfully:");
+
+
                         const userFromApi = await res.json();
-                        console.log({token_1:userFromApi.access_token });
-                        
-                        // console.log("User authorized successfully:", userFromApi);
+                        const token = userFromApi.access_token
+                        const decoded = jwt.decode(token) as { user_id?: string, exp:number, [key: string]: any };
+                        console.log({ decoded });
+                        console.log({ token });
+                        console.log({ userFromApi });
+
                         return {
-                            id: credentials.username, // ใช้ username เป็น id ชั่วคราว หรือจะ decode จาก token ก็ได้
-                            name: credentials.username,
+                            id: decoded.user_id!,
+                            name: decoded.username,
                             role_id: userFromApi.role_id,
                             accessToken: userFromApi.access_token,
                             refreshToken: userFromApi.refresh_token,
-                            expiresIn: 15, // 15 วินาที 
+                            // expiresIn: 60 * 1000,
+                            accessTokenExpires: decoded.exp ? decoded.exp * 1000 :  60 * 1000,
                         };
                     }
                     return null;
@@ -102,7 +129,9 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
             if (user) {
                 token.accessToken = user.accessToken;
                 token.refreshToken = user.refreshToken;
-                token.accessTokenExpires = Date.now() + user.expiresIn * 1000;
+                // token.accessTokenExpires = Date.now() + user.accessTokenExpires;
+                token.accessTokenExpires = user.accessTokenExpires as number;
+                // token.accessTokenExpires =  user.expiresIn ;
                 token.role_id = user.role_id;
                 token.id = user.id;
                 return token;
@@ -117,7 +146,8 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
 
             // 3. ถ้า Access Token หมดอายุแล้ว ให้เรียกฟังก์ชัน refresh
             console.log("refreshing.............");
-            return refreshAccessToken(token);
+            const refreshedToken = await refreshAccessToken(token);
+            return refreshedToken
         },
 
         // Callback นี้จะถูกเรียกเพื่อสร้าง object session ที่จะส่งให้ Client
@@ -127,6 +157,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
                 session.user.id = token.id as string;
                 session.user.role_id = token.role_id as number;
                 session.accessToken = token.accessToken as string;
+                session.refreshToken = token.refreshToken as string;
                 session.error = token.error as string;
             }
             return session;

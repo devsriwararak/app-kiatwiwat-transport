@@ -22,7 +22,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
     <html lang="en" suppressHydrationWarning>
       <body className={`${prompt.className}`}>
         <ToastContainer autoClose={2000} theme="colored"/>
-        <SessionProvider>
+        <SessionProvider  >
           {children}
         </SessionProvider>
 

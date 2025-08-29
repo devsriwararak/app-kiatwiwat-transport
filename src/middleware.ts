@@ -4,13 +4,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
 
-    // const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    // const roleId = token?.role_id as number | null;
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    const roleId = token?.role_id as number | null;
 
-    const token = "11111"
-    const roleId = 1 as number | null
-
-
+    // const token = "11111"
+    // const roleId = 1 as number | null
+    
     const isAuthPage = request.nextUrl.pathname.startsWith('/auth/sign-in')
     const isProtectedPageAdmin = request.nextUrl.pathname === '/' || request.nextUrl.pathname.startsWith('/admins')
     const isProtectedPageMember = request.nextUrl.pathname === '/' || request.nextUrl.pathname.startsWith('/member')
