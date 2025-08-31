@@ -6,7 +6,7 @@ import {
   DropdownContent,
   DropdownTrigger,
 } from "@/components/ui/dropdown";
-import { cn } from "@/lib/utils";
+import { cn, handleLogout } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -17,31 +17,33 @@ import { api, handleAxiosError } from "@/utils/api";
 export function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
   const { data: session } = useSession();
+  const user_id = session?.user.id
+
 
   const USER = {
-    name: "John Smith",
-    email: "johnson@nextadmin.com",
+    name: "Systems",
+    email: "",
     img: "/images/user/user-03.png",
   };
 
-  const handleLogout = async () => {
-    try {
-      const user_id = session?.user.id
-      if (!user_id) {
-        console.warn("User not logged in");
-        return;
-      }
-      const res = await api.post(`/auth/${process.env.NEXT_PUBLIC_V}/logout`, { user_id })
-      console.log({ res });
-      if (res.status === 200) {
-        signOut({ callbackUrl: '/auth/sign-in' })
-      }
-    } catch (error) {
-      console.log(error);
-      const message = handleAxiosError(error);
-      throw new Error(message);
-    }
-  }
+  // const handleLogout = async () => {
+  //   try {
+  //     const user_id = session?.user.id
+  //     if (!user_id) {
+  //       console.warn("User not logged in");
+  //       return;
+  //     }
+  //     const res = await api.post(`/auth/${process.env.NEXT_PUBLIC_V}/logout`, { user_id })
+  //     console.log({ res });
+  //     if (res.status === 200) {
+  //       signOut({ callbackUrl: '/auth/sign-in' })
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     const message = handleAxiosError(error);
+  //     throw new Error(message);
+  //   }
+  // }
 
   return (
     <Dropdown isOpen={isOpen} setIsOpen={setIsOpen}>
@@ -98,7 +100,7 @@ export function UserInfo() {
         </figure>
 
         <hr className="border-[#E8E8E8] dark:border-dark-3" />
-
+{/* 
         <div className="p-2 text-base text-[#4B5563] dark:text-dark-6 [&>*]:cursor-pointer">
           <Link
             href={"/profile"}
@@ -121,14 +123,14 @@ export function UserInfo() {
               Account Settings
             </span>
           </Link>
-        </div>
+        </div> */}
 
         <hr className="border-[#E8E8E8] dark:border-dark-3" />
 
         <div className="p-2 text-base text-[#4B5563] dark:text-dark-6">
           <button
             className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[9px] hover:bg-gray-2 hover:text-dark dark:hover:bg-dark-3 dark:hover:text-white"
-            onClick={handleLogout}
+            onClick={() => handleLogout(Number(user_id))}
           >
             <LogOutIcon />
 

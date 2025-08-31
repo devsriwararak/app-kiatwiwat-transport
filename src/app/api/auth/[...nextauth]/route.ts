@@ -4,33 +4,27 @@ import jwt from "jsonwebtoken";
 
 
 import CredentialsProvider from "next-auth/providers/credentials";
+import { handleLogout } from "@/lib/utils";
+import { getSession } from "next-auth/react";
+
+//  const session = await getSession();
+//     const user_id = session?.user.id;
 
 async function refreshAccessToken(token: JWT): Promise<JWT> {
     try {
         console.log("Attempting to refresh access token...");
 
-        // **สำคัญ:** เปลี่ยน URL นี้เป็น Endpoint /refreshtoken ของคุณ
-        // const response = await fetch(`${process.env.NEXT_PUBLIC_API}/auth/v1/refresh`, {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify({
-        //         refresh_token: token.refreshToken,
-        //     }),
-        // });
+        const apiUrl = `${process.env.NEXT_PUBLIC_API}/auth/v1/refresh`;
 
-          const apiUrl = `${process.env.NEXT_PUBLIC_API}/auth/v1/refresh`;
-
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        refresh_token: token.refreshToken,
-      }),
-    });
+        const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                refresh_token: token.refreshToken,
+            }),
+        });
 
         // **แก้ไข:** ตรวจสอบว่า response สำเร็จหรือไม่
         if (response.ok) {
@@ -42,8 +36,8 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
 
             console.log({ token_2_token: refreshedTokens.access_token });
             console.log({ token_2_refreshToken: refreshedTokens.refresh_token });
-            console.log({decoded});
-            
+            console.log({ decoded });
+
             return {
                 ...token,
                 accessToken: refreshedTokens.access_token,
@@ -53,15 +47,28 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
                 error: undefined, // ล้าง error เก่าทิ้ง
             };
         }
-        // **แก้ไข:** ถ้า response ไม่สำเร็จ (เช่น refresh token หมดอายุ) ให้คืนค่า error
         console.error("Failed to refresh access token. Status:", response.status);
+        const decoded = jwt.decode(token.accessToken) as { user_id?: number };
+        console.log({ 111: decoded.user_id });
+        if (response.status === 401) {
+            const decoded = jwt.decode(token.accessToken) as { user_id?: number };
+            await handleLogout(Number(decoded?.user_id));
+            return {
+                ...token,
+                error: "RefreshAccessTokenError 111",
+            };
+        }
+
         return {
             ...token,
-            error: "RefreshAccessTokenError",
+            error: "RefreshAccessTokenError 222",
         };
     } catch (error) {
         console.error("Error in refreshAccessToken function:", error);
         // กรณีเกิด Network error หรืออื่นๆ
+        const decoded = jwt.decode(token.accessToken) as { user_id?: number };
+        console.log({ 2222: decoded.user_id });
+        await handleLogout(Number(decoded.user_id))
         return {
             ...token,
             error: "RefreshAccessTokenError",
@@ -98,7 +105,7 @@ const authOptions: AuthOptions = {
 
                         const userFromApi = await res.json();
                         const token = userFromApi.access_token
-                        const decoded = jwt.decode(token) as { user_id?: string, exp:number, [key: string]: any };
+                        const decoded = jwt.decode(token) as { user_id?: string, exp: number, [key: string]: any };
                         console.log({ decoded });
                         console.log({ token });
                         console.log({ userFromApi });
@@ -110,7 +117,7 @@ const authOptions: AuthOptions = {
                             accessToken: userFromApi.access_token,
                             refreshToken: userFromApi.refresh_token,
                             // expiresIn: 60 * 1000,
-                            accessTokenExpires: decoded.exp ? decoded.exp * 1000 :  60 * 1000,
+                            accessTokenExpires: decoded.exp ? decoded.exp * 1000 : 60 * 1000,
                         };
                     }
                     return null;

@@ -4,25 +4,39 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { dataType } from '../page';
 import moment from 'moment';
-import { formathDateThai } from '@/lib/utils';
-import { PencilSquareIcon } from '@/assets/icons';
+import { formathDateThai, formatNumber } from '@/lib/utils';
+import { DotIcon, PencilSquareIcon } from '@/assets/icons';
+import { BellIcon } from '@/components/Layouts/header/notification/icons';
+import { HomeIcon } from '@/components/Layouts/sidebar/icons';
 
 interface propsType {
     due_today: dataType[];
     overdue: dataType[];
-
+setDataSend: Dispatch<SetStateAction<dataType>>
     totalPageProp: number;
     currentPage: number;
     setCurrentPage: Dispatch<SetStateAction<number>>;
+    index: number | null
+    setIndex: Dispatch<SetStateAction<number | null>>
 }
 
-const Today = ({ due_today, overdue, totalPageProp, currentPage, setCurrentPage }: propsType) => {
-    const [index, setIndex] = useState<number | null>(null)
+const Today = ({ due_today, overdue, totalPageProp, currentPage, setCurrentPage, index, setIndex, setDataSend }: propsType) => {
 
-    const handleClick = (id: number) => {
-        setIndex(id)
+    const handleClick = (product: dataType) => {
+        setIndex(product.id)
+        setDataSend({
+            id: product.id,
+            bill_number: product.bill_number,
+            payment_date: product.payment_date,
+            payment_amount: product.payment_amount,
+            status: product.status,
+            member_id: product.member_id,
+            member_name: product.member_name,
+            days_left: product.days_left,
+            user_name: product.user_name,
+            created_at: product.created_at
+        })
     }
-
     return (
         <div>
             <div className='my-4 mt-0 text-base bg-gray-200 w-full text-center rounded-sm text-dark-2'>ค้างจ่าย ติดลบ</div>
@@ -46,17 +60,21 @@ const Today = ({ due_today, overdue, totalPageProp, currentPage, setCurrentPage 
 
                         {overdue?.map((product) => (
                             <TableRow
-                                className={`text-sm font-medium text-dark dark:text-white ${index === product.id ? "bg-gray-200" : ""} `}
+                                className={`text-sm font-medium text-dark dark:text-white ${index === product.id ? "bg-dark-8 dark:bg-dark-4" : ""} `}
                                 key={product.id}
                             >
-                                <TableCell>{product.days_left}</TableCell>
+                                <TableCell> 
+                                    <div className='flex gap-3'>
+                                        <BellIcon className={`${product.days_left >= -10 && product.days_left <= -1 ? "bg-yellow-500" :"bg-red-500" } rounded-full p-0.5`} /> {product.days_left}
+                                    </div>
+                                </TableCell>
                                 <TableCell className="flex min-w-fit items-center gap-3 pl-5 sm:pl-6 xl:pl-7.5">
                                     <div>{product.bill_number}</div>
                                 </TableCell>
                                 <TableCell>{product.member_name}</TableCell>
-                                <TableCell>${product.payment_amount}</TableCell>
+                                <TableCell >${formatNumber(product.payment_amount)}</TableCell>
                                 <TableCell>{formathDateThai(product.payment_date)}</TableCell>
-                                <TableCell onClick={() => handleClick(product.id)} className='flex justify-end cursor-pointer   '><PencilSquareIcon className='active:bg-gray-300' /></TableCell>
+                                <TableCell onClick={() => handleClick(product)} className='flex justify-end cursor-pointer   '><PencilSquareIcon className='active:bg-gray-300' /></TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
@@ -66,7 +84,7 @@ const Today = ({ due_today, overdue, totalPageProp, currentPage, setCurrentPage 
             <div className='my-4  text-base bg-gray-200 w-full text-center rounded-sm text-dark-2'>รายชื่อค้างจ่ายวันนี้</div>
 
 
-            <div className=''>
+            <div className='h-60 overflow-y-auto'>
                 <Table>
                     <TableBody>
                         {due_today?.map((product) => (
@@ -78,9 +96,9 @@ const Today = ({ due_today, overdue, totalPageProp, currentPage, setCurrentPage 
                                     <div>{product.bill_number}</div>
                                 </TableCell>
                                 <TableCell>{product.member_name}</TableCell>
-                                <TableCell>${product.payment_amount}</TableCell>
+                                <TableCell>${formatNumber(product.payment_amount)}</TableCell>
                                 <TableCell>{formathDateThai(product.payment_date)}</TableCell>
-                                <TableCell onClick={() => handleClick(product.id)} className='flex justify-end cursor-pointer hover:bg-gray-200  p-2 rounded-full '><PencilSquareIcon /></TableCell>
+                                <TableCell onClick={() => handleClick(product)} className='flex justify-end cursor-pointer hover:bg-gray-200  p-2 rounded-full '><PencilSquareIcon /></TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

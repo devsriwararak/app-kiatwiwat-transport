@@ -6,6 +6,8 @@ import InputGroup from "../FormElements/InputGroup";
 import { Checkbox } from "../FormElements/checkbox";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { handleAxiosError } from "@/utils/api";
+import { toast } from "react-toastify";
 
 export default function SigninWithPassword() {
   const [username, setUsername] = useState('');
@@ -30,13 +32,15 @@ export default function SigninWithPassword() {
   
       if (result?.error) {
         setError('Invalid email or password');
-        console.error(result.error);
+        console.log(result.error);
+        toast.error('เข้าสู่ระบบไม่สำเร็จ')
       } else if (result?.ok) {
         router.refresh()
       }
     } catch (error) {
       setError('An unexpected error occurred.');
-      console.error('Sign in error:', error);
+      console.log('Sign in error:', error);
+      toast.error('เข้าสู่ระบบไม่สำเร็จ')
     }
   };
 

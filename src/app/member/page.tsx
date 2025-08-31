@@ -1,9 +1,13 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import { redirect, RedirectType } from 'next/navigation'
 
-const page = () => {
+
+const pageMember = () => {
+redirect('/member/process', RedirectType.replace)
   return (
-    <div>page</div>
+    <></>
   )
 }
 
-export default page
+export default pageMember
+

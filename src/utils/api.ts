@@ -1,5 +1,6 @@
+import { handleLogout } from "@/lib/utils";
 import axios, { AxiosError, AxiosInstance } from "axios";
-import { getSession, signIn } from "next-auth/react";
+import { getSession, signIn, useSession } from "next-auth/react";
 
 export const api: AxiosInstance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API || "",
@@ -24,11 +25,11 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
-        
+
         // เงื่อนไข: ถ้า Error เป็น 401 (Unauthorized) และยังไม่เคยลอง Retry
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true; // ตั้งค่า Flag เพื่อป้องกัน Infinite Loop
-            
+
             try {
                 // ดึง Session ใหม่ ซึ่งจะไปเรียก refreshAccessToken()
                 const session = await getSession();
@@ -59,12 +60,15 @@ api.interceptors.response.use(
     }
 );
 
-export const handleAxiosError = (error: unknown): string => {
+export const handleAxiosError = async (error: unknown): Promise<string> => {
+
     console.log(error);
     if (axios.isAxiosError(error)) {
         const err = error as AxiosError
+    
         if (err.response) {
-            const data = err.response.data as { message?: string }
+            const data = err.response.data as { message?: string, error? : string }
+
             return data.message || 'เกิดข้อผิดพลาดจาก server';
         } else if (err.request) {
             return 'ไม่สามารถเชื่อมต่อ server ได้';

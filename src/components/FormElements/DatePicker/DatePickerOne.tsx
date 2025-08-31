@@ -11,53 +11,24 @@ interface propsType {
   className?: string
   name?: string
   value?: string;
+   disabled?: boolean;
 
   onChange?: (date: string | Date | null) => void;
 }
 
-const DatePickerOne = ({ label, name, onChange, value }: propsType) => {
+const DatePickerOne = ({ label, name, onChange, value, disabled }: propsType) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
-
-
-
-  //  useEffect(() => {
-  //   flatpickr(".form-datepicker", {
-  //     mode: "single",
-  //     dateFormat: "d M Y", // แสดงวันที่แบบ 01 ม.ค. 2566
-  //     locale: {
-  //       ...Thai,
-  //       firstDayOfWeek: 1, // อาทิตย์เป็นวันแรก
-  //       weekdays: {
-  //         shorthand: ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"],
-  //         longhand: ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"],
-  //       },
-  //       months: {
-  //         shorthand: ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."],
-  //         longhand: ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"],
-  //       },
-  //     },
-  //     onChange: (selectedDates) => {
-  //       // if (!selectedDates.length) return;
-  //       // const d = selectedDates[0];
-  //       // // แปลงเป็นปี พ.ศ.
-  //       // const buddhistYear = d.getFullYear() + 543;
-  //       // const month = String(d.getMonth() + 1).padStart(2, "0");
-  //       // const day = String(d.getDate()).padStart(2, "0");
-  //       // onChange?.(`${buddhistYear}-${month}-${day}`);
-  //        if (!selectedDates.length) return;
-  //   const d = selectedDates[0];
-  //   const formattedDate = moment(d).format("YYYY-MM-DD"); // ปีสากล
-  //   onChange?.(formattedDate);
-  //     },
-  //   });
-  // }, []);
 
   useEffect(() => {
     if (inputRef.current) {
       flatpickr(inputRef.current, {
         mode: "single",
         dateFormat: "d M Y", // แสดงวันที่แบบ 01 ม.ค. 2566
-        defaultDate: new Date(),
+        defaultDate:  value && moment(value, "YYYY-MM-DD").isValid()
+        ? moment(value, "YYYY-MM-DD").toDate()
+        : new Date()
+        
+        ,
         locale: {
           ...Thai,
           firstDayOfWeek: 1, // อาทิตย์เป็นวันแรก
@@ -76,10 +47,11 @@ const DatePickerOne = ({ label, name, onChange, value }: propsType) => {
           const formattedDate = moment(d).format("YYYY-MM-DD"); // ปีสากล
           onChange?.(formattedDate);
         },
+        disable: disabled ? ['*'] : []
       });
     }
 
-  }, []);
+  }, [value]);
 
   return (
     <div>
@@ -95,6 +67,7 @@ const DatePickerOne = ({ label, name, onChange, value }: propsType) => {
           name={name}
           defaultValue={value}
           readOnly
+          disabled={disabled}
         />
 
         <div className="pointer-events-none absolute inset-0 left-auto right-5 flex items-center">

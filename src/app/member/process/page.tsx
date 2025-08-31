@@ -7,19 +7,18 @@ import Today from './pages/Today'
 import Add from './pages/Add'
 import Success from './pages/Success'
 import InputGroup from '@/components/FormElements/InputGroup'
-import { CallIcon, CheckIcon, UploadIcon, UserIcon } from '@/assets/icons'
-import DatePickerTwo from '@/components/FormElements/DatePicker/DatePickerTwo'
 import DatePickerOne from '@/components/FormElements/DatePicker/DatePickerOne'
-import { BellIcon } from '@/components/Layouts/header/notification/icons'
 import { api, handleAxiosError } from '@/utils/api'
 import { toast } from 'react-toastify'
 import { SingleValue } from "react-select";
 import dynamic from 'next/dynamic'
 import moment from 'moment'
 import { useSession } from 'next-auth/react'
+import { AlertConfirm, formathDateThai, formatNumber } from '@/lib/utils'
+import { Select } from '@/components/FormElements/select'
 
 
-const Select = dynamic(() => import("react-select"), { ssr: false });
+const SelectReact = dynamic(() => import("react-select"), { ssr: false });
 
 export interface dataType {
     id: number
@@ -27,9 +26,11 @@ export interface dataType {
     payment_date: string
     payment_amount: number,
     status: number,
-    member_id: number,
+    member_id: number | null,
     member_name: string
     days_left: number
+    user_name: string
+    created_at: string
 }
 
 type OptionType = {
@@ -41,12 +42,12 @@ const PageProcess = () => {
     const [data, setData] = useState<dataType[]>([]);
     const [due_today, setDue_today] = useState<dataType[]>([])
     const [overdue, setOverdue] = useState<dataType[]>([])
-    const [id, setId] = useState<number | null>(null)
+    const [index, setIndex] = useState<number | null>(null)
+
 
     const [page, setPage] = useState(1);
     const [totalPage, setTotalPage] = useState(0)
     const [currentPage, setCurrentPage] = useState(1)
-    const [search, setSearch] = useState("")
     const dateNow = moment(Date.now()).format("YYYY-MM-D")
 
 
@@ -60,9 +61,11 @@ const PageProcess = () => {
         payment_date: dateNow,
         payment_amount: 0,
         status: 1,
-        member_id: 0,
+        member_id: null,
         member_name: "",
-        days_left: 0
+        days_left: 0,
+        user_name: "",
+        created_at: ""
     })
 
     const [options, setOptions] = useState<OptionType[]>([]);
@@ -90,8 +93,13 @@ const PageProcess = () => {
                 params.date_from = startDate;
                 params.date_to = endDate;
                 params.page = currentPage
-                params.limit = 100
+                params.limit = 6
             } else {
+                endPoint = `/bill/${process.env.NEXT_PUBLIC_V}/all/pay`
+                params.date_from = startDate;
+                params.date_to = endDate;
+                params.page = currentPage
+                params.limit = 6
 
             }
             console.log({ endPoint });
@@ -132,7 +140,7 @@ const PageProcess = () => {
             }));
             setOptions(data);
         } catch (err) {
-            console.error(err);
+            handleAxiosError(err)
         }
     };
 
@@ -143,18 +151,22 @@ const PageProcess = () => {
             payment_date: "",
             payment_amount: 0,
             status: 1,
-            member_id: 0,
+            member_id: null,
             member_name: "",
-            days_left: 0
+            days_left: 0,
+            user_name: "",
+            created_at: "",
         })
         setOptions([])
         setSelected(null)
+        setStartDate("")
+        setEndDate("")
+        setIndex(null)
     }
 
 
-    const handleSave = async () => {
+    const handleSave = async (statusPay?: number | null) => {
         try {
-            console.log("dataSend before save:", dataSend);
 
             if (!dataSend.id) {
                 const payload = {
@@ -164,7 +176,7 @@ const PageProcess = () => {
                     status: dataSend.status,
                     member_id: Number(selected?.value),
                 }
-                console.log(payload);
+                console.log({ payload1: payload });
                 const res = await api.post(`/bill/${process.env.NEXT_PUBLIC_V}/create`, payload)
                 if (res.status === 201) {
                     toast.success('บันทึกสำเร็จ')
@@ -173,33 +185,28 @@ const PageProcess = () => {
                 }
 
             } else {
-
                 const payload = {
                     payment_date: dataSend.payment_date,
                     payment_amount: Number(dataSend.payment_amount),
-                    member_id: Number(selected?.value)
-
+                    member_id: Number(selected?.value),
+                    status: statusPay ? statusPay : dataSend.status
                 }
-                console.log(payload);
+                console.log({ payload2: payload });
 
                 const res = await api.put(`/bill/${process.env.NEXT_PUBLIC_V}/${dataSend.id}`, payload)
+
                 if (res.status === 200) {
                     toast.success('บันทึกสำเร็จ')
                     await fetchData()
+                    clearStateSave()
                 }
-
             }
 
-
         } catch (error) {
+            toast.error('เกิดข้อผิดพลาด')
             handleAxiosError(error)
         }
     }
-
-    const handleChangeOption = (option: SingleValue<OptionType>) => {
-        setSelected(option);
-    };
-
 
 
     const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -222,6 +229,8 @@ const PageProcess = () => {
     };
 
     const handleDelete = async () => {
+        const result = await AlertConfirm('ลบข้อมูล', 'คุณต้องการลบข้อมูลนี้จริงหรือไม่ ?')
+        if (!result) return
         try {
             const res = await api.delete(`/bill/${process.env.NEXT_PUBLIC_V}/${dataSend.id}`)
             if (res.status === 204) {
@@ -233,17 +242,26 @@ const PageProcess = () => {
         }
     }
 
-    const handlePay = async () => {
+    const handlePay = async (value: string) => {
+        const statusPay = Number(value)
+        console.log({ statusPay });
+
+
         try {
             if (status == "authenticated") {
+                if (statusPay === 2) {
+                    const user_id = session.user.id
+                    const res = await api.put(`/bill/${process.env.NEXT_PUBLIC_V}/${dataSend.id}/pay`, { user_id: user_id })
 
-                const user_id = session.user.id
-                const res = await api.put(`/bill/${process.env.NEXT_PUBLIC_V}/${dataSend.id}/pay`, { user_id: user_id })
-                
-                if (res.status === 200) {
-                    toast.success('ลบสำเร็จ')
-                    await fetchData()
+                    if (res.status === 200) {
+                        toast.success('ลบสำเร็จ')
+                        await fetchData()
+                        clearStateSave()
+                    }
+                } else {
+                    await handleSave(statusPay)
                 }
+
             }
         } catch (error) {
             handleAxiosError(error)
@@ -251,20 +269,51 @@ const PageProcess = () => {
     }
 
     useEffect(() => {
+        // if(status !== "authenticated") return
         fetchData()
         fetchOptions()
     }, [page, currentPage, startDate, endDate, data?.length, overdue.length])
+
+    useEffect(() => {
+        if (dataSend.member_id && dataSend.member_name) {
+            setSelected({ value: String(dataSend.member_id), label: dataSend.member_name })
+        }
+    }, [dataSend.member_id, dataSend.member_name])
     return (
         <div>
-            page : {page}
-            <div className='flex gap-4'>
-                <Button label='ต้องจ่ายวันนี้' className='h-10' shape="rounded" variant={`${page === 1 ? "red" : "outlineRed"}`} onClick={() => setPage(1)} />
-                <Button label='เพิ่มใหม่' className='h-10' shape="rounded" variant={`${page === 2 ? "primary" : "outlinePrimary"}`} onClick={() => setPage(2)} />
-                <Button label='จ่ายแล้ว' className='h-10' shape="rounded" variant={`${page === 3 ? "green" : "outlineGreen"}`} onClick={() => setPage(3)} />
+            <div className='flex flex-col md:flex-row justify-between  gap-4'>
+                <div className='flex flex-wrap gap-4'>
+                    <Button label='ต้องจ่ายวันนี้' className='h-10' shape="rounded" variant={`${page === 1 ? "red" : "outlineRed"}`} onClick={() => setPage(1)} />
+                    <Button label='เพิ่มใหม่' className='h-10' shape="rounded" variant={`${page === 2 ? "primary" : "outlinePrimary"}`} onClick={() => setPage(2)} />
+                    <Button label='จ่ายแล้ว' className='h-10' shape="rounded" variant={`${page === 3 ? "green" : "outlineGreen"}`} onClick={() => setPage(3)} />
+                </div>
+
+                <div className='w-full md:w-fit'>
+                    <Button onClick={clearStateSave} label='เคลียค่า' className='h-9 w-full' shape="rounded" variant="primary" />
+                </div>
             </div>
 
             <div className='flex flex-col md:flex-row gap-4 mt-6'>
                 <Card className='w-full md:w-7/12'>
+
+
+                    {(page === 2 || page === 3) && (
+                        <div className='mb-4 flex flex-col md:flex-row gap-4 items-center md:items-end'>
+                            <DatePickerOne
+                                label="วันที่เริ่มต้น"
+                                name="start_date"
+                                onChange={(date) => setStartDate(date ? moment(date).format("YYYY-MM-DD") : "")}
+                                value={startDate}
+                            />
+                            <DatePickerOne
+                                label="วันที่สิ้นสุด"
+                                name="end_date"
+                                onChange={(date) => setEndDate(date ? moment(date).format("YYYY-MM-DD") : "")}
+                                value={endDate}
+                            />
+                            <Button onClick={clearStateSave} label='ทั้งหมด' className='h-9' shape="rounded" variant="primary" />
+                        </div>
+                    )}
 
                     {Array.isArray(due_today) && page === 1 ?
                         <Today
@@ -273,36 +322,45 @@ const PageProcess = () => {
                             totalPageProp={totalPage}
                             currentPage={currentPage}
                             setCurrentPage={setCurrentPage}
+                            setDataSend={setDataSend}
+                            index={index}
+                            setIndex={setIndex}
                         /> :
                         Array.isArray(data) && page === 2 ?
                             <Add
                                 dataProps={Array.isArray(data) ? data : []}
-                                startDate={startDate}
-                                setStartDate={setStartDate}
-                                endDate={endDate}
-                                setEndDate={setEndDate}
                                 totalPageProp={totalPage}
                                 currentPage={currentPage}
                                 setCurrentPage={setCurrentPage}
                                 setDataSend={setDataSend}
+                                index={index}
+                                setIndex={setIndex}
                             /> :
                             Array.isArray(data) && page === 3 ?
-                                <Success /> : ""}
+                                <Success
+                                    dataProps={Array.isArray(data) ? data : []}
+                                    totalPageProp={totalPage}
+                                    currentPage={currentPage}
+                                    setCurrentPage={setCurrentPage}
+                                    setDataSend={setDataSend}
+                                    index={index}
+                                    setIndex={setIndex}
+                                /> : ""}
 
                 </Card>
                 <div className='w-full md:w-5/12'>
                     <div className='flex flex-col md:flex-row gap-3'>
-                        <Card className='w-full'>
+                        <Card className='w-full border-l-8 border-red-700'>
                             <span>จำนวน</span>
                             <div className='flex gap-2 justify-end items-center  '>
                                 <h2 className='text-3xl text-dark-2 dark:text-dark-8'>{unpaid_bill_count || 0}</h2>
                                 <span>คน</span>
                             </div>
                         </Card>
-                        <Card className='w-full'>
+                        <Card className='w-full  border-l-8 border-green-700'>
                             <span>ราคา</span>
                             <div className='flex gap-2 justify-end items-center'>
-                                <h2 className='text-3xl text-dark-2 dark:text-dark-8'>{total_outstanding || 0}</h2>
+                                <h2 className='text-3xl text-dark-2 dark:text-dark-8'>{formatNumber(total_outstanding || 0)}</h2>
                                 <span>บาท</span>
                             </div>
                         </Card>
@@ -310,7 +368,11 @@ const PageProcess = () => {
                     <Card className='mt-4'>
                         <div className='flex justify-between'>
                             <h3 className='text-dark-2 dark:text-dark-8 text-xl'>เพิ่ม/แก้ไข</h3>
-                            <p>สถานะ : ชำระเงินแล้ว</p>
+                            <p >
+                                <span className={`${dataSend.id ? dataSend.status === 2 ? "bg-green-600" : "bg-red-400" : ""} px-4 py-0.5 rounded-md text-dark-8`}>
+                                    {dataSend.id ? dataSend.status === 2 ? "ชำระงินแล้ว" : "ยังไม่ชำระเงิน" : ""}
+                                </span>
+                            </p>
                         </div>
 
                         <div className="mb-3 flex flex-col gap-2 sm:flex-row mt-4">
@@ -319,24 +381,28 @@ const PageProcess = () => {
                                 type="text"
                                 name="fullName"
                                 label="เลขที่บิล"
-                                placeholder="A-08-68-0001"
-                                icon={<UserIcon />}
-                                iconPosition="left"
+                                placeholder=""
                                 disabled
                                 height="sm"
                                 value={dataSend?.bill_number ?? ""}
                             />
 
                             <div className="w-full sm:w-1/2">
-                                <label htmlFor="" className='text-sm text-dark-3 '>ค้นหาลูกค้า</label>
-                                <Select
+                                <label htmlFor="" className='text-sm text-dark-3   '>ค้นหาลูกค้า</label>
+                                <SelectReact
+                                    isDisabled={session?.user.role_id !== 1}
                                     options={options}
+                                    // value={
+                                    //     dataSend.member_id
+                                    //         ? { value: dataSend.member_id, label: dataSend.member_name }
+                                    //         : selected
+                                    // }
                                     value={selected}
                                     onChange={(newValue) => {
-                                        // newValue type: unknown
                                         setSelected(newValue as OptionType | null);
                                     }}
                                     isClearable
+                                    className='mt-4'
                                 />
                             </div>
                         </div>
@@ -347,13 +413,12 @@ const PageProcess = () => {
                                 type="text"
                                 name="fullName"
                                 label="สร้างวันที่"
-                                placeholder="12-08-2568"
-                                icon={<UploadIcon />}
-                                iconPosition="left"
+                                placeholder={dataSend.created_at ? formathDateThai(dataSend.created_at) : ""}
                                 disabled
                                 height="sm"
                             />
-                            <DatePickerOne label="ชำระวันที่" name="payment_date" onChange={handleChangeDate} />
+                            {/* dataSend.payment_date : {dataSend.payment_date}  ได้ 2026-08-31 จาก DB  */}
+                            <DatePickerOne label="ชำระวันที่" name="payment_date" onChange={handleChangeDate} value={dataSend.payment_date} disabled={session?.user.role_id !== 1} />
                         </div>
 
                         <div className="mb-3 flex flex-col gap-2 sm:flex-row ">
@@ -363,11 +428,10 @@ const PageProcess = () => {
                                 name="payment_amount"
                                 label="จำนวนเงิน"
                                 placeholder="500.00"
-                                icon={<CheckIcon />}
-                                iconPosition="left"
                                 height="sm"
                                 value={String(dataSend?.payment_amount) ?? ""}
                                 onChange={handleChangeInput}
+                                disabled={session?.user.role_id !== 1}
                             />
 
                             <InputGroup
@@ -376,27 +440,37 @@ const PageProcess = () => {
                                 name="fullName"
                                 label="พนักงานที่กดบันทึก"
                                 placeholder=""
-                                icon={<BellIcon />}
-                                iconPosition="left"
                                 disabled
                                 height="sm"
+                                value={dataSend.member_name ? dataSend.member_name : ""}
                             />
                         </div>
 
+                        {dataSend.id ? (
+                            <Select
+                                label="ชำระเงิน"
+                                items={[
+                                    { label: "ยังไม่ชำระเงิน", value: "1" },
+                                    { label: "ชำระเงินแล้ว", value: "2" },
+                                ]}
+                                onChange={handlePay}
+                                value={dataSend.status ? dataSend.status.toString() : "2"}
+                                prefixIcon={""}
+                                placeholder="เลือก"
+                                className='w-full'
+                            />
+                        ) : ""}
+
                         <hr className='my-6' />
 
-                        <div className='flex justify-end gap-4'>
-                            {dataSend.id && (
-                                <Button onClick={handlePay} label={`ชำระเงิน`} className='h-9' shape="rounded" variant="red" />
-                            )}
-                            <Button onClick={handleDelete} label={`ลบ`} className='h-9' shape="rounded" variant="red" />
-                            <Button onClick={handleSave} label={`${!dataSend.id ? "บันทึก" : "แก้ไข"}`} className='h-9' shape="rounded" variant="primary" />
+                        <div className='flex justify-end gap-4 items-end'>
+
+                            {session?.user.role_id === 1 && <Button onClick={handleDelete} label={`ลบ`} className='h-9' shape="rounded" variant="red" />}
+                            {session?.user.role_id === 1 && <Button onClick={() => handleSave()} label={`${!dataSend.id ? "บันทึก" : "แก้ไข"}`} className='h-9' shape="rounded" variant="primary" />}
+                            {session?.user.role_id === 2 && !dataSend.id && <Button onClick={() => handleSave()} label={`บันทึก`} className='h-9' shape="rounded" variant="primary" />}
+
                         </div>
-
                     </Card>
-
-
-
                 </div>
             </div>
         </div>

@@ -1,38 +1,26 @@
 'use client'
 import Pagination from '@/components/ui/Pagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { formathDateThai } from '@/lib/utils';
+import { formathDateThai, formatNumber } from '@/lib/utils';
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { dataType } from '../page';
-import DatePickerOne from '@/components/FormElements/DatePicker/DatePickerOne';
-import moment from 'moment';
-import { Button } from '@/components/ui-elements/button';
 import { PencilSquareIcon } from '@/assets/icons';
 
 interface propsType {
     dataProps: dataType[];
-    startDate: string; // เปลี่ยนจาก Date | null เป็น string
-    setStartDate: Dispatch<SetStateAction<string>>;
-    endDate: string;   // เปลี่ยนจาก Date | null เป็น string
-    setEndDate: Dispatch<SetStateAction<string>>;
     totalPageProp: number;
     currentPage: number;
     setCurrentPage: Dispatch<SetStateAction<number>>;
-    setDataSend : Dispatch<SetStateAction<dataType>>
+    setDataSend: Dispatch<SetStateAction<dataType>>
+    index : number | null
+    setIndex : Dispatch<SetStateAction<number | null>>
 }
 
-const Add = ({ dataProps, totalPageProp, currentPage, setCurrentPage, setStartDate, setEndDate, startDate, endDate, setDataSend }: propsType) => {
+const Add = ({ dataProps, totalPageProp, currentPage, setCurrentPage, index, setIndex, setDataSend }: propsType) => {
 
     const [data, setData] = useState<dataType[]>(dataProps);
-    const [index, setIndex] = useState<number | null>(null)
 
-    const handleCancel = () => {
-        const formattedDate = moment(Date.now()).format("YYYY-MM-DD"); // "2025-08-29"
-        setStartDate("")
-        setEndDate("")
-    }
-
-    const handleClick = (product:dataType)=>{
+    const handleClick = (product: dataType) => {
         setIndex(product.id)
         setDataSend({
             id: product.id,
@@ -42,7 +30,9 @@ const Add = ({ dataProps, totalPageProp, currentPage, setCurrentPage, setStartDa
             status: product.status,
             member_id: product.member_id,
             member_name: product.member_name,
-            days_left: product.days_left
+            days_left: product.days_left,
+            user_name: product.user_name , 
+            created_at : product.created_at
         })
     }
 
@@ -52,23 +42,6 @@ const Add = ({ dataProps, totalPageProp, currentPage, setCurrentPage, setStartDa
 
     return (
         <div>
-
-            <div className='mb-4 flex flex-col md:flex-row gap-4 items-end'>
-                <DatePickerOne
-                    label="วันที่เริ่มต้น"
-                    name="start_date"
-                    onChange={(date) => setStartDate(date ? moment(date).format("YYYY-MM-DD") : "")}
-                    value={startDate}
-                />
-                <DatePickerOne
-                    label="วันที่สิ้นสุด"
-                    name="end_date"
-                    onChange={(date) => setEndDate(date ? moment(date).format("YYYY-MM-DD") : "")}
-                    value={endDate}
-                />
-                <Button onClick={handleCancel} label='เคลีย' className='h-9' shape="rounded" variant="primary" />
-            </div>
-
             <Table>
                 <TableHeader>
                     <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">
@@ -84,7 +57,7 @@ const Add = ({ dataProps, totalPageProp, currentPage, setCurrentPage, setStartDa
                 <TableBody>
                     {data?.map((product: dataType) => (
                         <TableRow
-                            className={`text-sm font-medium text-dark dark:text-white ${index === product.id ? "bg-gray-200" : ""} `}
+                            className={`text-sm font-medium text-dark dark:text-white ${index === product.id ? "bg-dark-8 dark:bg-dark-4" : ""} `}
                             key={product.id}
                         >
                             <TableCell className="flex min-w-fit items-center gap-3 pl-5 sm:pl-6 xl:pl-7.5">
@@ -93,7 +66,7 @@ const Add = ({ dataProps, totalPageProp, currentPage, setCurrentPage, setStartDa
 
                             <TableCell>{product.member_name}</TableCell>
 
-                            <TableCell>${product.payment_amount}</TableCell>
+                            <TableCell>${formatNumber(product.payment_amount)}</TableCell>
 
                             <TableCell>{formathDateThai(product.payment_date)}</TableCell>
                             <TableCell onClick={() => handleClick(product)} className='flex justify-center cursor-pointer  '><PencilSquareIcon /></TableCell>
