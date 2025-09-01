@@ -24,6 +24,7 @@ export interface dataType {
     id: number
     bill_number: string
     payment_date: string
+    payment_day: string
     payment_amount: number,
     status: number,
     member_id: number | null,
@@ -55,10 +56,15 @@ const PageProcess = () => {
     const [total_outstanding, setTotal_outstanding] = useState(0)
     const [unpaid_bill_count, setUnpaid_bill_count] = useState(0)
 
+    // Search
+    const [searchMember, setSearchMember] = useState("")
+    const [searchBillNumber, setSearchBillNumber] = useState("")
+
     const [dataSend, setDataSend] = useState<dataType>({
         id: 0,
         bill_number: "",
         payment_date: dateNow,
+        payment_day: dateNow,
         payment_amount: 0,
         status: 1,
         member_id: null,
@@ -90,12 +96,14 @@ const PageProcess = () => {
 
             } else if (page === 2) {
                 endPoint = `/bill/${process.env.NEXT_PUBLIC_V}/all`
-                params.date_from = startDate;
-                params.date_to = endDate;
+                params.search_member = searchMember
+                params.search_bill = searchBillNumber
                 params.page = currentPage
                 params.limit = 6
             } else {
                 endPoint = `/bill/${process.env.NEXT_PUBLIC_V}/all/pay`
+                // params.date_from = startDate;
+                // params.date_to = endDate;
                 params.date_from = startDate;
                 params.date_to = endDate;
                 params.page = currentPage
@@ -103,6 +111,8 @@ const PageProcess = () => {
 
             }
             console.log({ endPoint });
+            console.log({ params });
+
 
             if (!endPoint) {
                 console.warn("No endpoint defined for page", page);
@@ -117,12 +127,9 @@ const PageProcess = () => {
                 setTotal_outstanding(res.data.header.total_outstanding)
                 setUnpaid_bill_count(res.data.header.unpaid_bill_count)
                 if (res?.data?.results?.due_today) {
-                    console.log('111');
-
                     setDue_today(res.data.results.due_today)
                 }
                 if (res?.data?.results?.overdue) {
-                    console.log('222');
                     setOverdue(res.data.results.overdue)
                 }
             }
@@ -149,6 +156,7 @@ const PageProcess = () => {
             id: 0,
             bill_number: "",
             payment_date: "",
+            payment_day: "",
             payment_amount: 0,
             status: 1,
             member_id: null,
@@ -157,7 +165,7 @@ const PageProcess = () => {
             user_name: "",
             created_at: "",
         })
-        setOptions([])
+        // setOptions([])
         setSelected(null)
         setStartDate("")
         setEndDate("")
@@ -170,7 +178,7 @@ const PageProcess = () => {
 
             if (!dataSend.id) {
                 const payload = {
-                    // payment_date: dataSend.payment_date,
+                    bill_number: `BI${dataSend.bill_number}`,
                     payment_date: dataSend.payment_date || dateNow,
                     payment_amount: dataSend.payment_amount,
                     status: dataSend.status,
@@ -181,11 +189,13 @@ const PageProcess = () => {
                 if (res.status === 201) {
                     toast.success('บันทึกสำเร็จ')
                     await fetchData()
+                    await fetchOptions()
                     clearStateSave()
                 }
 
             } else {
                 const payload = {
+                    payment_day: dataSend.payment_day,
                     payment_date: dataSend.payment_date,
                     payment_amount: Number(dataSend.payment_amount),
                     member_id: Number(selected?.value),
@@ -198,6 +208,7 @@ const PageProcess = () => {
                 if (res.status === 200) {
                     toast.success('บันทึกสำเร็จ')
                     await fetchData()
+                    await fetchOptions()
                     clearStateSave()
                 }
             }
@@ -217,15 +228,26 @@ const PageProcess = () => {
 
     }
 
-    const handleChangeDate = (date: string | Date | null) => {
+    const handleChangeDate = (date: string | Date | null, mode: "payment_due" | "paymenting") => {
         if (!date) return;
         const formattedDate = moment(date).format("YYYY-MM-DD"); // "2025-08-29"
         console.log({ formattedDate });
 
-        setDataSend((prev) => ({
-            ...prev,
-            payment_date: formattedDate ? formattedDate : "",
-        }));
+        if (mode === "payment_due") {
+            setDataSend((prev) => ({
+                ...prev,
+                payment_date: formattedDate ? formattedDate : "",
+            }));
+        }
+
+        if (mode === "paymenting") {
+            setDataSend((prev) => ({
+                ...prev,
+                payment_day: formattedDate ? formattedDate : "",
+            }));
+        }
+
+
     };
 
     const handleDelete = async () => {
@@ -244,14 +266,18 @@ const PageProcess = () => {
 
     const handlePay = async (value: string) => {
         const statusPay = Number(value)
-        console.log({ statusPay });
-
 
         try {
             if (status == "authenticated") {
                 if (statusPay === 2) {
                     const user_id = session.user.id
-                    const res = await api.put(`/bill/${process.env.NEXT_PUBLIC_V}/${dataSend.id}/pay`, { user_id: user_id })
+                    const payload = {
+                        user_id: user_id,
+                        payment_day: dataSend.payment_day
+
+                    }
+
+                    const res = await api.put(`/bill/${process.env.NEXT_PUBLIC_V}/${dataSend.id}/pay`, payload)
 
                     if (res.status === 200) {
                         toast.success('ลบสำเร็จ')
@@ -272,13 +298,16 @@ const PageProcess = () => {
         // if(status !== "authenticated") return
         fetchData()
         fetchOptions()
-    }, [page, currentPage, startDate, endDate, data?.length, overdue.length])
+    }, [page, currentPage, startDate, endDate, data?.length, overdue.length, searchMember, searchBillNumber])
 
     useEffect(() => {
         if (dataSend.member_id && dataSend.member_name) {
             setSelected({ value: String(dataSend.member_id), label: dataSend.member_name })
         }
     }, [dataSend.member_id, dataSend.member_name])
+
+
+
     return (
         <div>
             <div className='flex flex-col md:flex-row justify-between  gap-4'>
@@ -296,8 +325,31 @@ const PageProcess = () => {
             <div className='flex flex-col md:flex-row gap-4 mt-6'>
                 <Card className='w-full md:w-7/12'>
 
+                    {page === 2 && (
+                        <div className='mb-4 flex flex-col md:flex-row gap-4 items-center md:items-end'>
+                            <InputGroup
+                                className="w-full sm:w-1/2"
+                                type="text"
+                                name="bill_number"
+                                label="ค้นหาจาก เลขที่บิล"
+                                placeholder="ค้นหาจากเลขที่บิล"
+                                height="sm"
+                                value={searchBillNumber}
+                                onChange={(e) => setSearchBillNumber(e.target.value)}
+                            />
+                            <InputGroup
+                                className="w-full sm:w-1/2"
+                                type="text"
+                                name="bill_number"
+                                label="ค้นหาจากชื่อลูกค้า"
+                                placeholder="ค้นหาจาก ชื่อลูกค้า"
+                                height="sm"
+                                value={searchMember}
+                                onChange={(e) => setSearchMember(e.target.value)} />
+                        </div>
+                    )}
 
-                    {(page === 2 || page === 3) && (
+                    {(page === 3) && (
                         <div className='mb-4 flex flex-col md:flex-row gap-4 items-center md:items-end'>
                             <DatePickerOne
                                 label="วันที่เริ่มต้น"
@@ -354,7 +406,7 @@ const PageProcess = () => {
                             <span>จำนวน</span>
                             <div className='flex gap-2 justify-end items-center  '>
                                 <h2 className='text-3xl text-dark-2 dark:text-dark-8'>{unpaid_bill_count || 0}</h2>
-                                <span>คน</span>
+                                <span>รายการ</span>
                             </div>
                         </Card>
                         <Card className='w-full  border-l-8 border-green-700'>
@@ -379,24 +431,21 @@ const PageProcess = () => {
                             <InputGroup
                                 className="w-full sm:w-1/2"
                                 type="text"
-                                name="fullName"
+                                name="bill_number"
                                 label="เลขที่บิล"
                                 placeholder=""
-                                disabled
                                 height="sm"
                                 value={dataSend?.bill_number ?? ""}
+                                onChange={handleChangeInput}
+                                disabled={!!dataSend.id}
                             />
 
                             <div className="w-full sm:w-1/2">
                                 <label htmlFor="" className='text-sm text-dark-3   '>ค้นหาลูกค้า</label>
                                 <SelectReact
-                                    isDisabled={session?.user.role_id !== 1}
+                                    // isDisabled={session?.user.role_id !== 1}
+                                    isDisabled={session?.user.role_id !== 1 && !!dataSend.id}
                                     options={options}
-                                    // value={
-                                    //     dataSend.member_id
-                                    //         ? { value: dataSend.member_id, label: dataSend.member_name }
-                                    //         : selected
-                                    // }
                                     value={selected}
                                     onChange={(newValue) => {
                                         setSelected(newValue as OptionType | null);
@@ -417,8 +466,11 @@ const PageProcess = () => {
                                 disabled
                                 height="sm"
                             />
-                            {/* dataSend.payment_date : {dataSend.payment_date}  ได้ 2026-08-31 จาก DB  */}
-                            <DatePickerOne label="ชำระวันที่" name="payment_date" onChange={handleChangeDate} value={dataSend.payment_date} disabled={session?.user.role_id !== 1} />
+                            <DatePickerOne label="ครบกำหนดชำระ" name="payment_date"
+                                onChange={(date) => handleChangeDate(date, "payment_due")}
+                                value={dataSend.payment_date}
+                                disabled={session?.user.role_id !== 1 && !!dataSend.id}
+                            />
                         </div>
 
                         <div className="mb-3 flex flex-col gap-2 sm:flex-row ">
@@ -431,7 +483,7 @@ const PageProcess = () => {
                                 height="sm"
                                 value={String(dataSend?.payment_amount) ?? ""}
                                 onChange={handleChangeInput}
-                                disabled={session?.user.role_id !== 1}
+                                disabled={session?.user.role_id !== 1 && !!dataSend.id}
                             />
 
                             <InputGroup
@@ -447,18 +499,29 @@ const PageProcess = () => {
                         </div>
 
                         {dataSend.id ? (
-                            <Select
-                                label="ชำระเงิน"
-                                items={[
-                                    { label: "ยังไม่ชำระเงิน", value: "1" },
-                                    { label: "ชำระเงินแล้ว", value: "2" },
-                                ]}
-                                onChange={handlePay}
-                                value={dataSend.status ? dataSend.status.toString() : "2"}
-                                prefixIcon={""}
-                                placeholder="เลือก"
-                                className='w-full'
-                            />
+                            <div className='flex flex-col md:flex-row gap-4'>
+
+                                <DatePickerOne label="วันที่ชำระ" name="payment_day"
+                                    onChange={(date) => handleChangeDate(date, "paymenting")}
+                                    value={dataSend.payment_day === "0001-01-01" ? dateNow : dataSend.payment_day}
+                                    disabled={!!dataSend.id && dataSend.status === 2}
+                                />
+
+                                <Select
+                                    label="ชำระเงิน"
+                                    items={[
+                                        { label: "ยังไม่ชำระเงิน", value: "1" },
+                                        { label: "ชำระเงินแล้ว", value: "2" },
+                                    ]}
+                                    onChange={handlePay}
+                                    value={dataSend.status ? dataSend.status.toString() : "2"}
+                                    prefixIcon={""}
+                                    placeholder="เลือก"
+                                    className='w-full'
+                                />
+
+
+                            </div>
                         ) : ""}
 
                         <hr className='my-6' />

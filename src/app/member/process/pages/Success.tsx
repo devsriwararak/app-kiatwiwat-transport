@@ -7,25 +7,28 @@ import { dataType } from '../page';
 import { PencilSquareIcon } from '@/assets/icons';
 
 interface propsType {
-    dataProps: dataType[];
-    totalPageProp: number;
-    currentPage: number;
-    setCurrentPage: Dispatch<SetStateAction<number>>;
-    setDataSend: Dispatch<SetStateAction<dataType>>
-    index : number | null
-    setIndex : Dispatch<SetStateAction<number | null>>
+  dataProps: dataType[];
+  totalPageProp: number;
+  currentPage: number;
+  setCurrentPage: Dispatch<SetStateAction<number>>;
+  setDataSend: Dispatch<SetStateAction<dataType>>
+  index: number | null
+  setIndex: Dispatch<SetStateAction<number | null>>
 }
 
-const Success = ({ dataProps, totalPageProp, currentPage, setCurrentPage,  index, setIndex, setDataSend }: propsType) => {
+const Success = ({ dataProps, totalPageProp, currentPage, setCurrentPage, index, setIndex, setDataSend }: propsType) => {
 
   const [data, setData] = useState<dataType[]>(dataProps);
 
   const handleClick = (product: dataType) => {
+    console.log({ product });
+
     setIndex(product.id)
     setDataSend({
       id: product.id,
       bill_number: product.bill_number,
       payment_date: product.payment_date,
+      payment_day: product.payment_day,
       payment_amount: product.payment_amount,
       status: product.status,
       member_id: product.member_id,
@@ -42,7 +45,6 @@ const Success = ({ dataProps, totalPageProp, currentPage, setCurrentPage,  index
 
   return (
     <div>
-
       <Table>
         <TableHeader>
           <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">
@@ -52,6 +54,7 @@ const Success = ({ dataProps, totalPageProp, currentPage, setCurrentPage,  index
             <TableHead>ชื่อลูกค้า</TableHead>
             <TableHead>จำนวนเงิน</TableHead>
             <TableHead>กำหนดชำระ</TableHead>
+            <TableHead>วันที่ชำระ</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -67,9 +70,12 @@ const Success = ({ dataProps, totalPageProp, currentPage, setCurrentPage,  index
 
               <TableCell>{product.member_name}</TableCell>
 
-             <TableCell>${formatNumber(product.payment_amount)}</TableCell>
+              <TableCell>${formatNumber(product.payment_amount)}</TableCell>
 
               <TableCell>{formathDateThai(product.payment_date)}</TableCell>
+
+              <TableCell>{formathDateThai(product.payment_day)}</TableCell>
+
               <TableCell onClick={() => handleClick(product)} className='flex justify-center cursor-pointer  '><PencilSquareIcon /></TableCell>
 
 

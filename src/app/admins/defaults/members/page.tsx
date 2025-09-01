@@ -275,8 +275,8 @@ const PageMember = () => {
 
           <div className='flex gap-2 justify-center items-center'>
             <label htmlFor="">
-              <span className={`${!dataSend.is_active ? "bg-green-200" : "bg-red-200"} text-dark-3 px-4 py-0.5 rounded-md`}>
-                {!dataSend.is_active ? "อยู่ในระบบ" : "ให้ออกจากระบบ"}
+              <span className={`${dataSend.is_active ? "bg-green-200" : "bg-red-200"} text-dark-3 px-4 py-0.5 rounded-md`}>
+                {dataSend.is_active ? "อยู่ในระบบ" : "ให้ออกจากระบบ"}
               </span>
             </label>
             <Switch checked={dataSend.is_active} onChange={handleChangeStatus} />

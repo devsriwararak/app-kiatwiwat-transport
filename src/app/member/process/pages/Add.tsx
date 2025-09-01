@@ -26,6 +26,7 @@ const Add = ({ dataProps, totalPageProp, currentPage, setCurrentPage, index, set
             id: product.id,
             bill_number: product.bill_number,
             payment_date: product.payment_date,
+            payment_day : product.payment_day,
             payment_amount: product.payment_amount,
             status: product.status,
             member_id: product.member_id,
