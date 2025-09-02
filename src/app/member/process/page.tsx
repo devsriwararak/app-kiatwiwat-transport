@@ -88,16 +88,16 @@ const PageProcess = () => {
         try {
             let endPoint: string | null = null;
             // let params: Record<string, any> = { page: currentPage, limit: 6 };
-            let params: Record<string, any> = {};
+            let params: Record<string, any> = { search_bill: searchBillNumber };
 
             if (page === 1) {
                 endPoint = `/bill/${process.env.NEXT_PUBLIC_V}/all/overdue`
                 params.sort = "ASC"
 
+
             } else if (page === 2) {
                 endPoint = `/bill/${process.env.NEXT_PUBLIC_V}/all`
                 params.search_member = searchMember
-                params.search_bill = searchBillNumber
                 params.page = currentPage
                 params.limit = 6
             } else {
@@ -324,6 +324,18 @@ const PageProcess = () => {
 
             <div className='flex flex-col md:flex-row gap-4 mt-6'>
                 <Card className='w-full md:w-7/12'>
+                    {page === 1 && (
+                        <InputGroup
+                            className="w-full sm:w-1/2"
+                            type="text"
+                            name="bill_number"
+                            label="ค้นหาจาก เลขที่บิล"
+                            placeholder="ค้นหาจากเลขที่บิล"
+                            height="sm"
+                            value={searchBillNumber}
+                            onChange={(e) => setSearchBillNumber(e.target.value)}
+                        />
+                    )}
 
                     {page === 2 && (
                         <div className='mb-4 flex flex-col md:flex-row gap-4 items-center md:items-end'>
@@ -362,6 +374,17 @@ const PageProcess = () => {
                                 name="end_date"
                                 onChange={(date) => setEndDate(date ? moment(date).format("YYYY-MM-DD") : "")}
                                 value={endDate}
+                            />
+
+                            <InputGroup
+                                className="w-full sm:w-1/2"
+                                type="text"
+                                name="bill_number"
+                                label="ค้นหาจาก เลขที่บิล"
+                                placeholder="ค้นหาจากเลขที่บิล"
+                                height="sm"
+                                value={searchBillNumber}
+                                onChange={(e) => setSearchBillNumber(e.target.value)}
                             />
                             <Button onClick={clearStateSave} label='ทั้งหมด' className='h-9' shape="rounded" variant="primary" />
                         </div>
