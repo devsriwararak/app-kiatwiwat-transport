@@ -68,6 +68,8 @@ export const handleAxiosError = async (error: unknown): Promise<string> => {
     
         if (err.response) {
             const data = err.response.data as { message?: string, error? : string }
+            console.log({handleAxiosError : data});
+            
 
             return data.message || 'เกิดข้อผิดพลาดจาก server';
         } else if (err.request) {

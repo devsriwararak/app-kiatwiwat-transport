@@ -67,7 +67,7 @@ const Add = ({ dataProps, totalPageProp, currentPage, setCurrentPage, index, set
 
                             <TableCell>{product.member_name}</TableCell>
 
-                            <TableCell>${formatNumber(product.payment_amount)}</TableCell>
+                            <TableCell>{formatNumber(product.payment_amount)}</TableCell>
 
                             <TableCell>{formathDateThai(product.payment_date)}</TableCell>
                             <TableCell onClick={() => handleClick(product)} className='flex justify-center cursor-pointer  '><PencilSquareIcon /></TableCell>

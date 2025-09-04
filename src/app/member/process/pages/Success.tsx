@@ -70,7 +70,7 @@ const Success = ({ dataProps, totalPageProp, currentPage, setCurrentPage, index,
 
               <TableCell>{product.member_name}</TableCell>
 
-              <TableCell>${formatNumber(product.payment_amount)}</TableCell>
+              <TableCell>{formatNumber(product.payment_amount)}</TableCell>
 
               <TableCell>{formathDateThai(product.payment_date)}</TableCell>
 

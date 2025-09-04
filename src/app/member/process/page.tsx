@@ -124,7 +124,11 @@ const PageProcess = () => {
             if (res.status === 200) {
                 setData(res.data.results)
                 setTotalPage(res.data.pagination.total_pages)
-                setTotal_outstanding(res.data.header.total_outstanding)
+                let sum = 0
+                if (status === "authenticated") {
+                    if (session.user.role_id === 1) sum = res.data.header.total_outstanding
+                }
+                setTotal_outstanding(sum)
                 setUnpaid_bill_count(res.data.header.unpaid_bill_count)
                 if (res?.data?.results?.due_today) {
                     setDue_today(res.data.results.due_today)
@@ -170,6 +174,7 @@ const PageProcess = () => {
         setStartDate("")
         setEndDate("")
         setIndex(null)
+        setSearchBillNumber("")
     }
 
 

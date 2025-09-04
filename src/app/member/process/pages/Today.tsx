@@ -39,7 +39,7 @@ const Today = ({ due_today, overdue, totalPageProp, currentPage, setCurrentPage,
         })
     }
     return (
-        <div>
+        <div className='mt-4'>
             <div className='my-4 mt-0 text-base bg-gray-200 w-full text-center rounded-sm text-dark-2'>ค้างจ่าย ติดลบ</div>
 
             <div className='  h-60 overflow-y-auto'>
@@ -73,7 +73,7 @@ const Today = ({ due_today, overdue, totalPageProp, currentPage, setCurrentPage,
                                     <div>{product.bill_number}</div>
                                 </TableCell>
                                 <TableCell>{product.member_name}</TableCell>
-                                <TableCell >${formatNumber(product.payment_amount)}</TableCell>
+                                <TableCell >{formatNumber(product.payment_amount)}</TableCell>
                                 <TableCell>{formathDateThai(product.payment_date)}</TableCell>
                                 <TableCell onClick={() => handleClick(product)} className='flex justify-end cursor-pointer   '><PencilSquareIcon className='active:bg-gray-300' /></TableCell>
                             </TableRow>
@@ -97,7 +97,7 @@ const Today = ({ due_today, overdue, totalPageProp, currentPage, setCurrentPage,
                                     <div>{product.bill_number}</div>
                                 </TableCell>
                                 <TableCell>{product.member_name}</TableCell>
-                                <TableCell>${formatNumber(product.payment_amount)}</TableCell>
+                                <TableCell>{formatNumber(product.payment_amount)}</TableCell>
                                 <TableCell>{formathDateThai(product.payment_date)}</TableCell>
                                 <TableCell onClick={() => handleClick(product)} className='flex justify-end cursor-pointer hover:bg-gray-200  p-2 rounded-full '><PencilSquareIcon /></TableCell>
                             </TableRow>
