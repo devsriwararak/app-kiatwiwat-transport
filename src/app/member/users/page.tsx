@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react'
-import { CallIcon, PencilSquareIcon, UserIcon } from '@/assets/icons'
+import { CallIcon, MessageOutlineIcon, PencilSquareIcon, UserIcon } from '@/assets/icons'
 import InputGroup from '@/components/FormElements/InputGroup'
 import { getTopProducts } from '@/components/Tables/fetch'
 import { Button } from '@/components/ui-elements/button'
@@ -14,13 +14,12 @@ import { AlertConfirm, formathDateThai } from '@/lib/utils';
 import { TopChannels } from '@/components/Tables/top-channels';
 import { Switch } from '@/components/FormElements/switch';
 import { api, handleAxiosError } from '@/utils/api';
-import { useSession } from 'next-auth/react';
 
 interface dataType {
   id: number
   full_name: string
   tel: string
-   created_at : string
+  created_at: string
 }
 
 const PageUsers = () => {
@@ -28,12 +27,13 @@ const PageUsers = () => {
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0)
   const [search, setSearch] = useState("")
+  const [index, setIndex] = useState<number | null>(null)
 
   const [dataSend, setDataSend] = useState<dataType>({
     id: 0,
     full_name: "",
     tel: "",
-     created_at : ""
+    created_at: ""
   })
 
   // System
@@ -46,9 +46,9 @@ const PageUsers = () => {
     setDataSend({
       id: 0,
       full_name: "",
-      tel:"",
-      created_at : ""
-  
+      tel: "",
+      created_at: ""
+
     })
   }
 
@@ -58,7 +58,7 @@ const PageUsers = () => {
     try {
       const res = await api.delete(`/members/${process.env.NEXT_PUBLIC_V}/${dataSend.id}`)
       console.log(res);
-      
+
       if (res.status === 204) {
         toast.success('ทำรายการสำเร็จ')
         await fetchData()
@@ -73,7 +73,7 @@ const PageUsers = () => {
   const fetchData = async () => {
     try {
       const res = await api.get(`/members/${process.env.NEXT_PUBLIC_V}/all`, {
-        params: { page, limit: 6, search }
+        params: { page, limit: 8, search }
       })
       if (res.status === 200) {
         console.log(res.data);
@@ -172,22 +172,21 @@ const PageUsers = () => {
               <TableRow className="border-none uppercase [&>th]:text-center">
                 <TableHead className="min-w-[120px] !text-left">ชื่อ-สกุล</TableHead>
                 <TableHead>เบอร์โทรศัพท์</TableHead>
-                <TableHead>วันที่สร้าง</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data?.map((item, i) => (
                 <TableRow
-                  className="text-center text-base font-medium text-dark dark:text-white"
+                  className={`text-center text-base font-medium text-dark dark:text-white cursor-pointer ${index === item.id ? "bg-gray-200/50" : ""}`}
                   key={item.id}
+                  onClick={() => {fetchDataById(item.id); setIndex(item.id)}}
                 >
                   <TableCell className="flex min-w-fit items-center gap-3">
                     <div className="">{item.full_name}</div>
                   </TableCell>
-                  <TableCell>{item.tel} </TableCell>
-                  <TableCell>{formathDateThai(item.created_at) }</TableCell>
-                  <TableCell className='flex justify-center items-center cursor-pointer'><PencilSquareIcon onClick={() => fetchDataById(item.id)} /></TableCell>
+                  <TableCell>{item.tel || "-"} </TableCell>
+                  <TableCell className='flex justify-center items-center cursor-pointer'><PencilSquareIcon onClick={() => {fetchDataById(item.id); setIndex(item.id)}} /></TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -203,17 +202,16 @@ const PageUsers = () => {
       </Card>
       <Card className="w-full md:w-4/12" >
         <div className='mb-4 flex justify-between items-center'>
-          <h3 className='text-xl text-dark-2 dark:text-dark-8'>เพิ่ม/แก้ไข {dataSend?.id}</h3>
-          <Button label="เพิ่มข้อมูล" variant="primary" shape="rounded" size="small" className='h-9' onClick={() => clearStateSave()} disabled={!dataSend.id} />
-
+          <h3 className='text-xl text-dark-2 dark:text-dark-8'>เพิ่ม/แก้ไข </h3>
+          <Button label="เพิ่มข้อมูลใหม่" variant="primary" shape="rounded" size="small" className='h-9' onClick={() => clearStateSave()} disabled={!dataSend.id} />
         </div>
         <form onSubmit={handleSave} >
-          <div className="mb-5.5 flex flex-col gap-2 sm:flex-row">
+          <div className="mb-5.5 flex flex-col gap-4">
             <InputGroup
-              className="w-full sm:w-1/2"
+              className="w-full "
               type="text"
               name="full_name"
-              label="ชื่อ-สกุล"
+              label="ชื่อลูกค้า"
               placeholder="กรอกชื่อ-สกุล"
               icon={<UserIcon />}
               iconPosition="left"
@@ -224,7 +222,7 @@ const PageUsers = () => {
             />
 
             <InputGroup
-              className="w-full sm:w-1/2"
+              className="w-full "
               type="text"
               name="tel"
               label="เบอร์โทรศัพท์"
@@ -232,7 +230,7 @@ const PageUsers = () => {
               icon={<CallIcon />}
               iconPosition="left"
               height="sm"
-               value={dataSend?.tel ?? ""}
+              value={dataSend?.tel ?? ""}
               onChange={handleChangeInput}
             />
           </div>
@@ -240,7 +238,7 @@ const PageUsers = () => {
           <hr className='my-6' />
 
           <div className='flex justify-end gap-2 '>
-            <Button label="ลบ" variant="red" shape="rounded" size="small" className='h-9' onClick={handleDelete} />
+            {dataSend.id ? (<Button label="ลบ" variant="red" shape="rounded" size="small" className='h-9' onClick={handleDelete} />) : ""}
             <Button type="submit" label={`${!dataSend.id ? "บันทึก" : "อัพเดท"}`} variant="primary" shape="rounded" size="small" className='h-9' />
           </div>
 

@@ -40,7 +40,7 @@ const Today = ({ due_today, overdue, totalPageProp, currentPage, setCurrentPage,
     }
     return (
         <div className='mt-4'>
-            <div className='my-4 mt-0 text-base bg-gray-200 w-full text-center rounded-sm text-dark-2'>ค้างจ่าย ติดลบ</div>
+            <div className='my-4 mt-0 text-base bg-dark-8/70 dark:bg-dark-2 w-full text-center rounded-sm text-dark-2 dark:text-dark-8'>ค้างจ่าย ติดลบ</div>
 
             <div className='  h-60 overflow-y-auto'>
                 <Table className=' '>
@@ -51,8 +51,8 @@ const Today = ({ due_today, overdue, totalPageProp, currentPage, setCurrentPage,
                             <TableHead className="min-w-[120px] pl-5 sm:pl-6 xl:pl-7.5">
                                 เลขที่บิล
                             </TableHead>
-                            <TableHead>ชื่อลูกค้า</TableHead>
-                            <TableHead>จำนวนเงิน</TableHead>
+                            <TableHead>ลูกค้า</TableHead>
+                            <TableHead>ราคา</TableHead>
                             <TableHead>กำหนดชำระ</TableHead>
                             <TableHead>Actions</TableHead>
                         </TableRow>
@@ -61,8 +61,9 @@ const Today = ({ due_today, overdue, totalPageProp, currentPage, setCurrentPage,
 
                         {overdue?.map((product) => (
                             <TableRow
-                                className={`text-sm font-medium text-dark dark:text-white ${index === product.id ? "bg-dark-8 dark:bg-dark-4" : ""} `}
+                                className={`text-sm font-medium cursor-pointer text-dark dark:text-white ${index === product.id ? "bg-dark-8/50 dark:bg-dark-4" : ""} `}
                                 key={product.id}
+                                onClick={() => handleClick(product)}
                             >
                                 <TableCell> 
                                     <div className='flex gap-3'>
@@ -82,7 +83,7 @@ const Today = ({ due_today, overdue, totalPageProp, currentPage, setCurrentPage,
                 </Table>
             </div>
 
-            <div className='my-4  text-base bg-gray-200 w-full text-center rounded-sm text-dark-2'>รายชื่อค้างจ่ายวันนี้</div>
+            <div className='my-4 mt-8 text-base bg-dark-8/70 dark:bg-dark-2 w-full text-center rounded-sm text-dark-2 dark:text-dark-8'>รายชื่อค้างจ่ายวันนี้</div>
 
 
             <div className='h-60 overflow-y-auto'>
@@ -90,8 +91,9 @@ const Today = ({ due_today, overdue, totalPageProp, currentPage, setCurrentPage,
                     <TableBody>
                         {due_today?.map((product) => (
                             <TableRow
-                                className="text-sm font-medium text-dark dark:text-white"
+                                className="text-sm font-medium text-dark dark:text-white cursor-pointer"
                                 key={product.id}
+                                onClick={() => handleClick(product)}
                             >
                                 <TableCell className="flex min-w-fit items-center gap-3 pl-5 sm:pl-6 xl:pl-7.5">
                                     <div>{product.bill_number}</div>

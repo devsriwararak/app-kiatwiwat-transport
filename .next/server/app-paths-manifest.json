@@ -1,6 +1,7 @@
 {
-  "/favicon.ico/route": "app/favicon.ico/route.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
   "/auth/sign-in/page": "app/auth/sign-in/page.js",
+  "/member/users/page": "app/member/users/page.js",
+  "/admins/defaults/members/page": "app/admins/defaults/members/page.js",
   "/member/process/page": "app/member/process/page.js"
 }

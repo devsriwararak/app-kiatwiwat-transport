@@ -30,6 +30,7 @@ const PageMember = () => {
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0)
   const [search, setSearch] = useState("")
+  const [index, setIndex] = useState<number | null>(null)
 
 
   const [enabled, setEnabled] = useState(false);
@@ -78,7 +79,7 @@ const PageMember = () => {
   const fetchData = async () => {
     try {
       const res = await api.get(`/users/${process.env.NEXT_PUBLIC_V}/all`, {
-        params: { page, limit: 6, search }
+        params: { page, limit: 8, search }
       })
       if (res.status === 200) {
         console.log(res.data);
@@ -187,17 +188,18 @@ const PageMember = () => {
             <TableBody>
               {data.map((item, i) => (
                 <TableRow
-                  className="text-center text-base font-medium text-dark dark:text-white"
+                  className={`text-center text-base font-medium text-dark dark:text-white cursor-pointer ${index === item.id ? "bg-gray-200/50" : ""}`}
                   key={item.id}
+                  onClick={() => {fetchDataById(item.id); setIndex(item.id)}}
                 >
                   <TableCell className="flex min-w-fit items-center gap-3">
                     <div className="">{item.full_name}</div>
                   </TableCell>
                   <TableCell>- </TableCell>
-                  <TableCell>{formathDateThai(item.created_at) }</TableCell>
+                  <TableCell>{formathDateThai(item.created_at)}</TableCell>
 
                   <TableCell>{item.username}</TableCell>
-                  <TableCell className='flex justify-center items-center cursor-pointer'><PencilSquareIcon onClick={() => fetchDataById(item.id)} /></TableCell>
+                  <TableCell className='flex justify-center items-center cursor-pointer'><PencilSquareIcon onClick={() => {fetchDataById(item.id); setIndex(item.id)}} /></TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -213,8 +215,8 @@ const PageMember = () => {
       </Card>
       <Card className="w-full md:w-4/12" >
         <div className='mb-4 flex justify-between items-center'>
-          <h3 className='text-xl text-dark-2 dark:text-dark-8'>เพิ่ม/แก้ไข {dataSend?.id}</h3>
-          <Button label="เพิ่มข้อมูล" variant="primary" shape="rounded" size="small" className='h-9' onClick={() => clearStateSave()} disabled={!dataSend.id} />
+          <h3 className='text-xl text-dark-2 dark:text-dark-8'>เพิ่ม/แก้ไข </h3>
+          <Button label="เพิ่มข้อมูลใหม่" variant="primary" shape="rounded" size="small" className='h-9' onClick={() => clearStateSave()} disabled={!dataSend.id} />
 
         </div>
         <form onSubmit={handleSave} >
@@ -284,7 +286,7 @@ const PageMember = () => {
           <hr className='my-6' />
 
           <div className='flex justify-end gap-2 '>
-            <Button label="ลบ" variant="red" shape="rounded" size="small" className='h-9' onClick={handleDelete} />
+            {dataSend?.id ? (<Button label="ลบ" variant="red" shape="rounded" size="small" className='h-9' onClick={handleDelete} />) : ""}
             <Button type="submit" label={`${!dataSend.id ? "บันทึก" : "อัพเดท"}`} variant="primary" shape="rounded" size="small" className='h-9' />
           </div>
 

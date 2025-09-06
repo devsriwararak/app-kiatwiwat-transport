@@ -1,6 +1,6 @@
 import { handleLogout } from "@/lib/utils";
 import axios, { AxiosError, AxiosInstance } from "axios";
-import { getSession, signIn, useSession } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 
 export const api: AxiosInstance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API || "",

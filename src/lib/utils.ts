@@ -3,7 +3,7 @@ import moment from "moment";
 import Swal from "sweetalert2";
 import { twMerge } from "tailwind-merge"
 import 'moment/locale/th'; // นำเข้าภาษาไทย
-import { getSession, signOut, useSession } from "next-auth/react";
+import {  signOut } from "next-auth/react";
 import { api, handleAxiosError } from "@/utils/api";
 
 
@@ -14,10 +14,12 @@ export function cn(...inputs: ClassValue[]) {
 export const AlertConfirm = (title: string, message: string): Promise<boolean> => {
   return Swal.fire({
     title: title || "",
+    text : message || "" , 
     showCancelButton: true,
     confirmButtonText: "ลบ",
     confirmButtonColor: "red",
-    cancelButtonText: "ยกเลิก"
+    cancelButtonText: "ยกเลิก",
+    icon: "warning"
   }).then((result) => {
     if (result.isConfirmed) {
       return true

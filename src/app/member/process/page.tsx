@@ -317,9 +317,9 @@ const PageProcess = () => {
         <div>
             <div className='flex flex-col md:flex-row justify-between  gap-4'>
                 <div className='flex flex-wrap gap-4'>
-                    <Button label='ต้องจ่ายวันนี้' className='h-10' shape="rounded" variant={`${page === 1 ? "red" : "outlineRed"}`} onClick={() => setPage(1)} />
-                    <Button label='เพิ่มใหม่' className='h-10' shape="rounded" variant={`${page === 2 ? "primary" : "outlinePrimary"}`} onClick={() => setPage(2)} />
-                    <Button label='จ่ายแล้ว' className='h-10' shape="rounded" variant={`${page === 3 ? "green" : "outlineGreen"}`} onClick={() => setPage(3)} />
+                    <Button label='ต้องจ่ายวันนี้' className='h-10' shape="rounded" variant={`${page === 1 ? "red" : "outlineRed"}`} onClick={() => {setPage(1); clearStateSave() }} />
+                    <Button label='เพิ่มใหม่' className='h-10' shape="rounded" variant={`${page === 2 ? "primary" : "outlinePrimary"}`} onClick={() => {setPage(2); clearStateSave() }} />
+                    <Button label='จ่ายแล้ว' className='h-10' shape="rounded" variant={`${page === 3 ? "green" : "outlineGreen"}`} onClick={() => {setPage(3); clearStateSave() }} />
                 </div>
 
                 <div className='w-full md:w-fit'>
@@ -471,7 +471,6 @@ const PageProcess = () => {
                             <div className="w-full sm:w-1/2">
                                 <label htmlFor="" className='text-sm text-dark-3   '>ค้นหาลูกค้า</label>
                                 <SelectReact
-                                    // isDisabled={session?.user.role_id !== 1}
                                     isDisabled={session?.user.role_id !== 1 && !!dataSend.id}
                                     options={options}
                                     value={selected}
@@ -556,7 +555,7 @@ const PageProcess = () => {
 
                         <div className='flex justify-end gap-4 items-end'>
 
-                            {session?.user.role_id === 1 && <Button onClick={handleDelete} label={`ลบ`} className='h-9' shape="rounded" variant="red" />}
+                            {session?.user.role_id === 1 && dataSend.id ? <Button onClick={handleDelete} label={`ลบ`} className='h-9' shape="rounded" variant="red" /> : ""}
                             {session?.user.role_id === 1 && <Button onClick={() => handleSave()} label={`${!dataSend.id ? "บันทึก" : "แก้ไข"}`} className='h-9' shape="rounded" variant="primary" />}
                             {session?.user.role_id === 2 && !dataSend.id && <Button onClick={() => handleSave()} label={`บันทึก`} className='h-9' shape="rounded" variant="primary" />}
 

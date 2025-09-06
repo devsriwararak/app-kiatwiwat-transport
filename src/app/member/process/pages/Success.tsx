@@ -51,8 +51,8 @@ const Success = ({ dataProps, totalPageProp, currentPage, setCurrentPage, index,
             <TableHead className="min-w-[120px] pl-5 sm:pl-6 xl:pl-7.5">
               เลขที่บิล
             </TableHead>
-            <TableHead>ชื่อลูกค้า</TableHead>
-            <TableHead>จำนวนเงิน</TableHead>
+            <TableHead>ลูกค้า</TableHead>
+            <TableHead>ราคา</TableHead>
             <TableHead>กำหนดชำระ</TableHead>
             <TableHead>วันที่ชำระ</TableHead>
             <TableHead>Actions</TableHead>
@@ -61,8 +61,9 @@ const Success = ({ dataProps, totalPageProp, currentPage, setCurrentPage, index,
         <TableBody>
           {data?.map((product: dataType) => (
             <TableRow
-              className={`text-sm font-medium text-dark dark:text-white ${index === product.id ? "bg-dark-8 dark:bg-dark-4" : ""} `}
+              className={`text-sm font-medium text-dark dark:text-white cursor-pointer ${index === product.id ? "bg-dark-8 dark:bg-dark-4" : ""} `}
               key={product.id}
+              onClick={() => handleClick(product)}
             >
               <TableCell className="flex min-w-fit items-center gap-3 pl-5 sm:pl-6 xl:pl-7.5">
                 <div>{product.bill_number}</div>

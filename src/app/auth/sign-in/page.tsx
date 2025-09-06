@@ -32,9 +32,8 @@ export default function SignIn() {
                 บริษัท เกียรติวิวัฒน์ ทรานสปอร์ต จำกัด
               </h1>
 
-              <p className="w-full max-w-[375px] font-medium text-dark-4 dark:text-dark-6">
-                Please sign in to your account by completing the necessary
-                fields below
+              <p className="w-full min-w-[375px] font-medium text-dark-4 dark:text-dark-6">
+                ระบบบันทึก และติดตามบิล ลิขสิทธิ์เฉพาะ บริษัท เกียรติวิวัฒน์ ทรานสปอร์ต จำกัด เท่านั้น
               </p>
 
               <div className="mt-8">
